@@ -1,32 +1,62 @@
 #pragma once
 
+constexpr u3 wav_format_integer=1;
+constexpr u3 wav_format_float=3;
+
+
 struct WAV_Header
 {
     // RIFF Header
     char riff_header[4] = {'R', 'I', 'F', 'F'}; // Contains "RIFF"
-    int wav_size; // Size of the wav portion of the file, which follows the first 8 bytes. File size - 8
+    u2 wav_size; // Size of the wav portion of the file, which follows the first 8 bytes. File size - 8
     char wave_header[4] = {'W', 'A', 'V', 'E'}; // Contains "WAVE"
 
     // Format Header
     char fmt_header[4] = {'f', 'm', 't', ' '}; // Contains "fmt " (includes trailing space)
-    int fmt_chunk_size;                        // Should be 16 for PCM
-    short audio_format;                        // Should be 1 for PCM. 3 for IEEE Float
-    short num_channels;
-    int sample_rate;
-    int byte_rate;          // Number of bytes per second. sample_rate * num_channels * Bytes Per Sample
-    short sample_alignment; // num_channels * Bytes Per Sample
-    short bit_depth;        // Number of bits per sample
+    u2 fmt_chunk_size;                        // Should be 16 for PCM
+    u1 audio_format;                        // Should be 1 for PCM. 3 for IEEE Float
+    u1 num_channels;
+    u2 sample_rate;
+    u2 byte_rate;          // Number of bytes per second. sample_rate * num_channels * Bytes Per Sample
+    u1 sample_alignment; // num_channels * Bytes Per Sample
+    u1 bit_depth;        // Number of bits per sample
 
     // Data
     char data_header[4] = {'d', 'a', 't', 'a'}; // Contains "data"
-    int data_bytes; // Number of bytes in data. Number of samples * num_channels * sample byte size
+    u2 data_bytes; // Number of bytes in data. Number of samples * num_channels * sample byte size
 
-    void write(std::vector<uint8_t>&buf,const uint8_t* data, size_t dataLength)
+    template<typename T>
+    std::vector<T> load(File&fp)
     {
-    	buf.resize(44+data_bytes);
-    	memcpy(buf.data(),this,44);
-    	memcpy(buf.data()+44,data,data_bytes);
+        u3 read_size=fread(this,44,1,fp);
+
+        auto err_desc=std::format("wav file [{}] data is damaged.",fp.name());
+
+        cu_assert(read_size==44,err_desc);
+        cu_assert(wav_size>data_bytes&&wav_size==data_bytes+36,err_desc);
+        cu_assert(fmt_chunk_size==16,err_desc);
+        cu_assert(is(audio_format).one_of(wav_format_integer,wav_format_integer),err_desc);
+        cu_assert(num_channels>0,err_desc);
+        cu_assert(sample_rate>0,err_desc);
+        cu_assert(bit_depth%8==0&&is(bit_depth).one_of(8,16,32),err_desc);
+        cu_assert(!(audio_format==wav_format_float&&bit_depth<32),err_desc);
+
+        u3 byte_per_sample=bit_depth/8;
+
+        cu_assert(  std::is_integral_v<T>&&audio_format==wav_format_integer||
+                    std::is_float_point_v<T>&&audio_format==wav_format_float,err_desc);
+
+        cu_assert(sizeof(T)==byte_per_sample,err_desc);
+
+        cu_assert(byte_rate==byte_per_sample*sample_rate*num_channels,err_desc);
+        cu_assert(sample_alignment==num_channels*byte_per_sample,err_desc);
+
+        std::vector<byte> buf(data_bytes);
+        cu_assert(fread(buf.data(),1,h.data_bytes,file)==data_bytes,err_desc);
+
+        return buf;
     }
+
 };
 
 
@@ -36,27 +66,14 @@ PCM<Sample_T> wav_decode_from_file(std::string path)
 	PCM pcm;
 	wav_header h;
 
-    FP fp(path,"rb");
-	fread(&h,44,1,fp);
-
+    File file(path,"rb");
+	
+	pcm.data=h.load(file);
     
-
-	std::vector<uint8_t> buf(h.data_bytes);
-	buf.resize(fread(buf.data(),1,h.data_bytes,fp));
-
-	memcpy(&h,buf.data(),44);
 	pcm.channel_num=h.num_channels;
 	pcm.sample_rate=h.sample_rate;
 	pcm.sample_num=h.data_bytes/h.sample_alignment;
-
-	printf("%u %u %u\n",pcm.channel_num,pcm.sample_rate,pcm.sample_num);
-	pcm.data.resize(pcm.sample_num*pcm.channel_num);
-
-	for(int i=0;i<pcm.sample_num*pcm.channel_num;i++)
-	{
-		pcm.data[i]=i[(float*)(buf.data()+44)]*32767;
-	}
-
+    
 	return pcm;
 }
 

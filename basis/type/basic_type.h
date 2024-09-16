@@ -16,3 +16,5 @@ typedef __uint128_t u4;
 
 typedef float       f2;
 typedef double      f3;
+
+using byte=u0;
