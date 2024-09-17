@@ -1,10 +1,10 @@
 #pragma once
 
 template<typename T>
-concept Sample_Integer_Type=is_intergral_v<T>&&is_signed_v<T>&&is(sizeof(T)).one_of(1,2,4);
+concept Sample_Integer_Type=std::signed_intergral<T>&&is(sizeof(T)).one_of(1,2,4);
 
 template<typename T>
-concept Sample_Float_Type=is_floating_point_v<T>&&is(sizeof(T)).one_of(4,8);
+concept Sample_Float_Type=std::floating_point<T>&&is(sizeof(T)).one_of(4,8);
 
 template<typename T>
 concept Sample_Type=Sample_Integer_Type<T>||Sample_Float_Type<T>;
