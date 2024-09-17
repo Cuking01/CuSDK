@@ -1,6 +1,6 @@
 #pragma once
 
-template<typename T>
+template<Sample_Type T>
 struct Sound_Track
 {
 	u3 sample_rate;
@@ -19,7 +19,7 @@ using Sound_Track_f3=Sound_Track<f3>;
 using Sound_Track_i=Sound_Track_i1;
 using Sound_Track_f=Sound_Track_f2;
 
-template<typename T>
+template<Sample_Type T>
 struct PCM
 {
     u3 sample_rate;
@@ -56,8 +56,6 @@ struct PCM
     	return track;
     }
 };
-
-
 
 using PCM_i0=PCM<s0>;
 using PCM_i1=PCM<s1>;

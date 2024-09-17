@@ -13,7 +13,7 @@ struct WAV_Header
 
     // Format Header
     char fmt_header[4] = {'f', 'm', 't', ' '}; // Contains "fmt " (includes trailing space)
-    u2 fmt_chunk_size;                        // Should be 16 for PCM
+    u2 fmt_chunk_size=16;                        // Should be 16 for PCM
     u1 audio_format;                        // Should be 1 for PCM. 3 for IEEE Float
     u1 num_channels;
     u2 sample_rate;
@@ -25,8 +25,7 @@ struct WAV_Header
     char data_header[4] = {'d', 'a', 't', 'a'}; // Contains "data"
     u2 data_bytes; // Number of bytes in data. Number of samples * num_channels * sample byte size
 
-    template<typename T>
-    std::vector<T> load(File&fp)
+    void load(File&fp)
     {
         u3 read_size=fread(this,44,1,fp);
 
@@ -35,57 +34,74 @@ struct WAV_Header
         cu_assert(read_size==44,err_desc);
         cu_assert(wav_size>data_bytes&&wav_size==data_bytes+36,err_desc);
         cu_assert(fmt_chunk_size==16,err_desc);
-        cu_assert(is(audio_format).one_of(wav_format_integer,wav_format_integer),err_desc);
         cu_assert(num_channels>0,err_desc);
         cu_assert(sample_rate>0,err_desc);
-        cu_assert(bit_depth%8==0&&is(bit_depth).one_of(8,16,32),err_desc);
-        cu_assert(!(audio_format==wav_format_float&&bit_depth<32),err_desc);
+        cu_assert(bit_depth%8==0,err_desc);
 
         u3 byte_per_sample=bit_depth/8;
 
-        cu_assert(  std::is_integral_v<T>&&audio_format==wav_format_integer||
-                    std::is_float_point_v<T>&&audio_format==wav_format_float,err_desc);
+        bool integer_restrict=audio_format==wav_format_integer&&is(bit_depth).one_of(8,16,32);
+        bool float_restrict=audio_format==wav_format_float&&is(bit_depth).one_of(32,64);
 
-        cu_assert(sizeof(T)==byte_per_sample,err_desc);
+        cu_assert(integer_restrict||float_restrict,err_desc);
 
+        //防溢出
+        cu_assert(byte_rate>=std::max(byte_per_sample,sample_rate,num_channels),err_desc);
+        cu_assert(sample_alignment>=std::max(num_channels,byte_per_sample),err_desc);
+
+        //数值约束
         cu_assert(byte_rate==byte_per_sample*sample_rate*num_channels,err_desc);
         cu_assert(sample_alignment==num_channels*byte_per_sample,err_desc);
 
-        std::vector<byte> buf(data_bytes);
-        cu_assert(fread(buf.data(),1,h.data_bytes,file)==data_bytes,err_desc);
-
-        return buf;
     }
 
 };
 
 
-template<typename Sample_T>
-PCM<Sample_T> wav_decode_from_file(std::string path)
+template<Sample_Type T>
+PCM<T> wav_decode_from_file(std::string path)
 {
-	PCM pcm;
+	PCM<T> pcm;
 	wav_header h;
-
     File file(path,"rb");
-	
-	pcm.data=h.load(file);
+	h.load(file);
     
-	pcm.channel_num=h.num_channels;
-	pcm.sample_rate=h.sample_rate;
-	pcm.sample_num=h.data_bytes/h.sample_alignment;
-    
+    std::vector<byte> buf(h.data_bytes);
+    cu_assert(fread(buf.data(),1,h.data_bytes,file)==data_bytes,err_desc);
+
+    pcm.channel_num=h.num_channels;
+    pcm.sample_rate=h.sample_rate;
+    pcm.sample_num=h.data_bytes/h.sample_alignment;
+    pcm.data.resize(pcm.sample_num*pcm.channel_num);
+
+    //采样数乘声道数
+    u3 n=pcm.sample_num*pcm.channel_num;
+
+    if(h.audio_format==wav_format_integer)
+    {
+        if(h.bit_depth==8)
+            sample_trans_n(pcm.data.data(),(s0*)buf.data(),n);
+        else if(h.bit_depth==16)
+            sample_trans_n(pcm.data.data(),(s1*)buf.data(),n);
+        else
+            sample_trans_n(pcm.data.data(),(s2*)buf.data(),n);
+    }
+    else if(h.audio_format==wav_format_float)
+    {
+        if(h.bit==32)
+            sample_trans_n(pcm.data.data(),(f2*)buf.data(),n);
+        else
+            sample_trans_n(pcm.data.data(),(f3*)buf.data(),n);
+    }
+
 	return pcm;
 }
 
-void encode_to_file(const PCM& pcm, std::string path)
+template<Sample_Type T>
+void wav_encode_to_file(const PCM<T>& pcm, std::string path)
 {
-    auto bufferSize = sizeof(wav_header) + pcm.data.size() * 2;
-    std::vector<uint8_t> buffer;
-    buffer.reserve(bufferSize);
+    WAV_Header h;
 
-    encode(pcm, buffer);
-
-    wav_header h;
     h.wav_size = 36 + pcm.sample_num * pcm.channel_num * sizeof(int16_t);
     h.fmt_chunk_size = 16;
     h.audio_format = 1;
