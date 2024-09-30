@@ -4,30 +4,30 @@ template<typename T>
 struct Predicate
 {
 	const T*p_value;
-	constexpr Predicate(T&&v):p_value(&v){}
-	constexpr Predicate(const T&v):p_value(&v){}
+	constexpr Predicate(T&&v) noexcept:p_value(&v){}
+	constexpr Predicate(const T&v) noexcept:p_value(&v){}
 
-	constexpr operator T() const {return *p_value;}
-	constexpr const T& value() const {return *p_value;}
-
-	// void print_type() const
-	// {
-	// 	printf("%s\n",typeid(T).name());
-	// }
+	constexpr operator T() const noexcept {return *p_value;}
+	constexpr const T& value() const noexcept {return *p_value;}
 };
 
 
 template<typename T>
 struct is:Predicate<T>
 {
-	constexpr bool one_of(auto&&... args) const
+	constexpr bool one_of(auto&&... args) const noexcept(noexcept((Predicate<T>::value()==args)||...))
 	{
 		return ((Predicate<T>::value()==args)||...);
 	}
 
-	constexpr bool none_of(auto&&... args) const
+	constexpr bool none_of(auto&&... args) const noexcept(noexcept(!((Predicate<T>::value()==args)||...)))
 	{
-		return ((Predicate<T>::value()==args)||...);
+		return !((Predicate<T>::value()==args)||...);
+	}
+
+	constexpr bool in(auto&&l,auto&&r) const noexcept(noexcept(l<=Predicate<T>::value()&&Predicate<T>::value()<=r))
+	{
+		return l<=Predicate<T>::value()&&Predicate<T>::value()<=r;
 	}
 };
 
