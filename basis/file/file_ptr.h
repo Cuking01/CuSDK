@@ -4,11 +4,11 @@ struct File
 {
 	File(const File&)=delete;
 	File(File&&file2) noexcept:fp(file2.fp),file_name(file2.file_name){file2.fp=nullptr;}
-	File(FILE*fp):fp(fp),file_name("unknown_file_name"){if(!fp)throw std::runtime_error("fp is nullptr.");}
+	File(FILE*fp):fp(fp),file_name("unknown_file_name"){cu_assert(fp,"fp is nullptr.");}
 	File(std::string_view file_name,const char*mode):file_name(file_name)
 	{
 		fp=fopen(file_name.data(),mode);
-		if(!fp)throw std::runtime_error(std::format("file {} not found.",file_name));
+		cu_assert(fp,"file {} not found.",file_name);
 	};
 	File& operator=(const File&file)=delete;
 	File& operator=(File&&file) noexcept

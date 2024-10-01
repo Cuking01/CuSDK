@@ -8,6 +8,11 @@ struct Sound_Track
 
 	T& operator[](u3 i){return data[i];}
 	T operator[](u3 i) const{return data[i];}
+
+	u3 sample_num() const noexcept
+    {
+    	return data.size()/channel_num;
+    }
 };
 
 using Sound_Track_i0=Sound_Track<s0>;
@@ -24,7 +29,6 @@ struct PCM
 {
     u3 sample_rate;
     u3 channel_num;
-    u3 sample_num;
     std::vector<T> data;
 
     std::vector<Sound_Track<T>> to_track() const
@@ -54,6 +58,11 @@ struct PCM
     				track[i][j]=data[i*channel_num+j];
 		}
     	return track;
+    }
+
+    u3 sample_num() const noexcept
+    {
+    	return data.size()/channel_num;
     }
 };
 

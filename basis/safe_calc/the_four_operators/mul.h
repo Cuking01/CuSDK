@@ -54,3 +54,8 @@ auto mul_s(T1 a,T2 b)->decltype(a*b)
 	return A*B;
 }
 
+template<std::integral T1,std::integral T2,std::integral... Ts>
+auto mul_s(T1 a,T2 b,Ts... v) requires Not_Empty_Pack<Ts...>;
+{
+	return mul_s(mul_s(a,b),v...);
+}

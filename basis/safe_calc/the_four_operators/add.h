@@ -35,3 +35,9 @@ auto add_s(T1 a,T2 b)->decltype(a+b)
 {
 	return add_s(b,a);
 }
+
+template<std::integral T1,std::integral T2,std::integral... Ts>
+auto add_s(T1 a,T2 b,Ts... v) requires Not_Empty_Pack<Ts...>;
+{
+	return add_s(add_s(a,b),v...);
+}

@@ -32,7 +32,8 @@ struct WAV_Header
         auto err_desc=std::format("wav file [{}] data is damaged.",fp.name());
 
         cu_assert(read_size==44,err_desc);
-        cu_assert(wav_size>data_bytes&&wav_size==data_bytes+36,err_desc);
+        cu_assert(add_s(data_bytes,36)==wav_size,err_desc);
+
         cu_assert(fmt_chunk_size==16,err_desc);
         cu_assert(num_channels>0,err_desc);
         cu_assert(sample_rate>0,err_desc);
@@ -45,13 +46,9 @@ struct WAV_Header
 
         cu_assert(integer_restrict||float_restrict,err_desc);
 
-        //防溢出
-        cu_assert(byte_rate>=std::max(byte_per_sample,sample_rate,num_channels),err_desc);
-        cu_assert(sample_alignment>=std::max(num_channels,byte_per_sample),err_desc);
-
         //数值约束
-        cu_assert(byte_rate==byte_per_sample*sample_rate*num_channels,err_desc);
-        cu_assert(sample_alignment==num_channels*byte_per_sample,err_desc);
+        cu_assert(byte_rate==mul_s(byte_per_sample,sample_rate,num_channels),err_desc);
+        cu_assert(sample_alignment==mul_s(num_channels,byte_per_sample),err_desc);
 
     }
 
@@ -71,11 +68,10 @@ PCM<T> wav_decode_from_file(std::string path)
 
     pcm.channel_num=h.num_channels;
     pcm.sample_rate=h.sample_rate;
-    pcm.sample_num=h.data_bytes/h.sample_alignment;
     pcm.data.resize(pcm.sample_num*pcm.channel_num);
 
     //采样数乘声道数
-    u3 n=pcm.sample_num*pcm.channel_num;
+    u3 n=pcm.data.size();
 
     if(h.audio_format==wav_format_integer)
     {
@@ -88,7 +84,7 @@ PCM<T> wav_decode_from_file(std::string path)
     }
     else if(h.audio_format==wav_format_float)
     {
-        if(h.bit==32)
+        if(h.bit_depth==32)
             sample_trans_n(pcm.data.data(),(f2*)buf.data(),n);
         else
             sample_trans_n(pcm.data.data(),(f3*)buf.data(),n);
@@ -102,20 +98,20 @@ void wav_encode_to_file(const PCM<T>& pcm, std::string path)
 {
     WAV_Header h;
 
-    h.wav_size = 36 + pcm.sample_num * pcm.channel_num * sizeof(int16_t);
-    h.fmt_chunk_size = 16;
-    h.audio_format = 1;
-    h.num_channels = pcm.channel_num;
-    h.sample_rate = pcm.sample_rate;
-    h.byte_rate = pcm.sample_rate * pcm.channel_num * 2;
-    h.sample_alignment = pcm.channel_num * 2;
-    h.bit_depth = 16;
-	h.data_bytes = pcm.sample_num * pcm.channel_num * 2;
-
-	h.write(buf, (uint8_t*) pcm.data.data(), pcm.data.size() * 2);
+    h.wav_size=cast_s_auto(36+pcm.data.size()*sizeof(T));
+    h.fmt_chunk_size=16;
+    h.audio_format=Sample_Integer_Type<T>?wav_format_integer:wav_format_float;
+    h.num_channels=cast_s_auto(pcm.channel_num);
+    h.sample_rate=cast_s_auto(pcm.sample_rate);
+    h.byte_rate=cast_s_auto(pcm.sample_rate*pcm.channel_num*sizeof(T));
+    h.sample_alignment=cast_s_auto(pcm.channel_num*sizeof(T));
+    h.bit_depth=sizeof(T)*2;
+	h.data_bytes=cast_s_auto(pcm.data.size()*sizeof(T));
     
-    FILE*fp=fopen(path.c_str(),"wb");
-    fwrite(buffer.data(),1,buffer.size(),fp);
-    fclose(fp);
+    File file(path,"wb");
+
+    fwrite(&h,44,1,file);
+    fwrite(pcm.data.data(),1,h.data_bytes,file);
+    
 }
 
