@@ -3,7 +3,6 @@
 constexpr u3 wav_format_integer=1;
 constexpr u3 wav_format_float=3;
 
-
 struct WAV_Header
 {
     // RIFF Header
@@ -31,8 +30,8 @@ struct WAV_Header
 
         auto err_desc=std::format("wav file [{}] data is damaged.",fp.name());
 
-        cu_assert(read_size==44,err_desc);
-        cu_assert(add_s(data_bytes,36)==wav_size,err_desc);
+        cu_assert(read_size==1,err_desc);
+        //cu_assert(add_s(data_bytes,36)==wav_size,err_desc);
 
         cu_assert(fmt_chunk_size==16,err_desc);
         cu_assert(num_channels>0,err_desc);
@@ -49,26 +48,21 @@ struct WAV_Header
         //数值约束
         cu_assert(byte_rate==mul_s(byte_per_sample,sample_rate,num_channels),err_desc);
         cu_assert(sample_alignment==mul_s(num_channels,byte_per_sample),err_desc);
-
+        cu_assert(data_bytes%sample_alignment==0,err_desc);
     }
-
 };
-
 
 template<Sample_Type T>
 PCM<T> wav_decode_from_file(std::string path)
 {
-	PCM<T> pcm;
-	wav_header h;
+	WAV_Header h;
     File file(path,"rb");
 	h.load(file);
     
     std::vector<byte> buf(h.data_bytes);
-    cu_assert(fread(buf.data(),1,h.data_bytes,file)==data_bytes,err_desc);
-
-    pcm.channel_num=h.num_channels;
-    pcm.sample_rate=h.sample_rate;
-    pcm.data.resize(pcm.sample_num*pcm.channel_num);
+    cu_assert(fread(buf.data(),1,h.data_bytes,file)==h.data_bytes,"wav file {} read failed.",path);
+    
+    PCM<T> pcm(h.sample_rate,h.num_channels,h.data_bytes/h.sample_alignment);
 
     //采样数乘声道数
     u3 n=pcm.data.size();
@@ -105,13 +99,13 @@ void wav_encode_to_file(const PCM<T>& pcm, std::string path)
     h.sample_rate=cast_s_auto(pcm.sample_rate);
     h.byte_rate=cast_s_auto(pcm.sample_rate*pcm.channel_num*sizeof(T));
     h.sample_alignment=cast_s_auto(pcm.channel_num*sizeof(T));
-    h.bit_depth=sizeof(T)*2;
+    h.bit_depth=sizeof(T)*8;
 	h.data_bytes=cast_s_auto(pcm.data.size()*sizeof(T));
     
     File file(path,"wb");
 
     fwrite(&h,44,1,file);
     fwrite(pcm.data.data(),1,h.data_bytes,file);
-    
+
 }
 

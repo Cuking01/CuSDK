@@ -1,7 +1,7 @@
 #pragma once
 
-#define CUSDK_VERSION_ID "0.0.0"
-#define CUSDK_VERSION_TAG "begin"
+#define CUSDK_VERSION_ID "0.1.0"
+#define CUSDK_VERSION_TAG "beta-safe operator"
 
 #ifndef APP_VERSION_ID
 	#warning "APP_VERSION_ID don't be defined."

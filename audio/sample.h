@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-concept Sample_Integer_Type=std::signed_intergral<T>&&is(sizeof(T)).one_of(1,2,4);
+concept Sample_Integer_Type=std::signed_integral<T>&&is(sizeof(T)).one_of(1,2,4);
 
 template<typename T>
 concept Sample_Float_Type=std::floating_point<T>&&is(sizeof(T)).one_of(4,8);
@@ -18,8 +18,8 @@ f3 sample_to_f3(T v)
 template<Sample_Integer_Type T>
 f3 sample_to_f3(T v)
 {
-	static constexpr max=std::number_limits<S>::max();
-	static constexpr min=std::number_limits<S>::min();
+	static constexpr T max=std::numeric_limits<T>::max();
+	static constexpr T min=std::numeric_limits<T>::min();
 
 	if(v==min)v++;
 	return v*(1.0/max);
@@ -34,7 +34,7 @@ T f3_to_sample(f3 v)
 template<Sample_Integer_Type T>
 T f3_to_sample(f3 v)
 {
-	static constexpr max=std::number_limits<S>::max();
+	static constexpr T max=std::numeric_limits<T>::max();
 
 	if(v>1)v=1;
 	if(v<-1)v=-1;

@@ -15,7 +15,7 @@ struct Predicate
 template<typename T>
 struct is:Predicate<T>
 {
-	constexpr bool one_of(auto&&... args) const noexcept(noexcept((Predicate<T>::value()==args)||...))
+	constexpr bool one_of(auto&&... args) const noexcept(noexcept(((Predicate<T>::value()==args)||...)))
 	{
 		return ((Predicate<T>::value()==args)||...);
 	}

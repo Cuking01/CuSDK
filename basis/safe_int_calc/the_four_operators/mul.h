@@ -8,13 +8,13 @@ auto mul_s(T1 a,T2 b)->decltype(a*b)
 	T A=a,B=b;
 	if((A>=0)^(B>=0))
 	{
-		if(A<0)cu_assert(B<=std::number_limits<T>::min()/A,"mul underflow");
-		else cu_assert(A<=std::number_limits<T>::min()/B,"mul underflow");
+		if(A<0)cu_assert(B<=std::numeric_limits<T>::min()/A,"mul underflow");
+		else cu_assert(A<=std::numeric_limits<T>::min()/B,"mul underflow");
 	}
 	else
 	{
-		if(A<0)cu_assert(A>=std::number_limits<T>::max()/B,"mul overflow");
-		else cu_assert(A<=std::number_limits<T>::max()/B,"mul overflow");
+		if(A<0)cu_assert(A>=std::numeric_limits<T>::max()/B,"mul overflow");
+		else cu_assert(A<=std::numeric_limits<T>::max()/B,"mul overflow");
 	}
 
 	return A*B;
@@ -26,7 +26,7 @@ auto mul_s(T1 a,T2 b)->decltype(a*b)
 	using T=decltype(a*b);
 	T A=a,B=b;
 	if(A==0||B==0)return 0;
-	cu_assert(A<=std::number_limits<T>::max()/B,"mul overflow");
+	cu_assert(A<=std::numeric_limits<T>::max()/B,"mul overflow");
 	return A*B;
 }
 
@@ -38,7 +38,7 @@ auto mul_s(T1 a,T2 b)->decltype(a*b)
 	using T=decltype(a*b);
 	T A=a,B=b;
 	if(A==0||B==0)return 0;
-	cu_assert(A<=std::number_limits<T>::max()/B,"mul overflow");
+	cu_assert(A<=std::numeric_limits<T>::max()/B,"mul overflow");
 	return A*B;
 }
 
@@ -50,12 +50,12 @@ auto mul_s(T1 a,T2 b)->decltype(a*b)
 	using T=decltype(a*b);
 	T A=a,B=b;
 	if(A==0||B==0)return 0;
-	cu_assert(A<=std::number_limits<T>::max()/B,"mul overflow");
+	cu_assert(A<=std::numeric_limits<T>::max()/B,"mul overflow");
 	return A*B;
 }
 
 template<std::integral T1,std::integral T2,std::integral... Ts>
-auto mul_s(T1 a,T2 b,Ts... v) requires Not_Empty_Pack<Ts...>;
+auto mul_s(T1 a,T2 b,Ts... v) requires Not_Empty_Pack<Ts...>
 {
 	return mul_s(mul_s(a,b),v...);
 }
