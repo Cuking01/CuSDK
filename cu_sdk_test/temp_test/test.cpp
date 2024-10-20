@@ -2,23 +2,10 @@
 
 int main()
 {
-	try
-	{
-		cu_assert(0+1==2);
-	}
-	catch(std::exception&e)
-	{
-		printf("%s\n",e.what());
-	}
+	using T1=std::vector<int>;
+	using T2=int;
 	
-
-	try
-	{
-		cu_assert(4+6==5,"exp calc");
-	}
-	catch(std::exception&e)
-	{
-		printf("%s\n",e.what());
-	}
-
+	static_assert(Instance_Of<std::vector,T1>);
+	static_assert(!Instance_Of<std::vector,T2>);
 }
+

@@ -6,6 +6,7 @@
 
 #include "basis/macro.h"
 #include "basis/std_head.h"
+#include "basis/type_traits.h"
 #include "basis/concepts.h"
 #include "basis/version.h"
 #include "basis/type.h"
