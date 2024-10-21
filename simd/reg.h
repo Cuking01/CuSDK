@@ -1,24 +1,12 @@
 #pragma once
 
-template<u2 bitw>
-struct Vec_Reg;
-
+struct Vec_Reg_Base;
 
 template<typename T>
-constexpr bool is_vec_reg_impl=false;
+concept Vec_Reg_T=std::derived_from<T,Vec_Reg_Base>;
 
-template<u2 bitw>
-constexpr bool is_vec_reg_impl<Vec_Reg<bitw>> =true;
+#include "reg/mm.h"
+#include "reg/xmm.h"
+#include "reg/ymm.h"
+#include "reg/zmm.h"
 
-template<typename T>
-concept Vec_Reg_T=is_vec_reg_impl<T>;
-
-#include "mm.h"
-#include "xmm.h"
-#include "ymm.h"
-#include "zmm.h"
-
-#include "mm.cpp"
-#include "xmm.cpp"
-#include "ymm.cpp"
-#include "zmm.cpp"
