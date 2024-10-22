@@ -18,6 +18,7 @@
 #include "simd/reg_pack.hpp"
 #include "simd/pack_ref.hpp"
 #include "simd/cint_pack.hpp"
+#include "simd/instruction.hpp"
 
 #undef IMPL_ALTERNATIVE
 #undef SIMD_OPT

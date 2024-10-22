@@ -1,6 +1,6 @@
 #pragma once
 
-struct ZMM
+struct ZMM:Vec_Reg_Base
 {
 	union
 	{

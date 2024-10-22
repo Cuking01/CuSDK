@@ -1,6 +1,6 @@
 #pragma once
 
-struct XMM
+struct XMM:Vec_Reg_Base
 {
 	union
 	{

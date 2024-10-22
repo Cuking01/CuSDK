@@ -1,6 +1,6 @@
 #pragma once
 
-struct YMM
+struct YMM:Vec_Reg_Base
 {
 	union
 	{

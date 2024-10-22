@@ -1,6 +1,6 @@
 #pragma once
 
-struct MM
+struct MM:Vec_Reg_Base
 {
 	__m64 reg;
 };
