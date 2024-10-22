@@ -1,14 +1,14 @@
 #pragma once
 
-
-
-template<Vec_Reg_T T,u2 n>
+template<Reg_T Reg,u2 n>
 struct Pack_Ref
 {
 	struct Ref
 	{
-		T& ref;
+		Reg& ref;
 	};
 
 	Ref ref[n];
+
+	ALWAYS_INLINE Reg& operator[](u2 idx){return ref[idx].ref;} 
 };
