@@ -1,6 +1,6 @@
 #pragma once
 
-template<Reg_T T,u2 n>
+template<Reg_T T,u2 n> requires (n>0)
 struct Pack_Ref;
 
 template<typename T>
@@ -14,7 +14,7 @@ concept Pack_Ref_T=is_reg_pack_ref_v<T>;
 
 
 
-template<Reg_T T,u2 n>
+template<Reg_T T,u2 n> requires (n>0)
 struct Pack_CRef;
 
 template<typename T>

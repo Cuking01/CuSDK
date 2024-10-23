@@ -1,6 +1,6 @@
 #pragma once
 
-template<Reg_T Reg,u2 n>
+template<Reg_T Reg,u2 n> requires (n>0)
 struct Pack
 {
 	static constexpr u2 size=n;
