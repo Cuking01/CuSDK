@@ -2,7 +2,7 @@
 
 struct YMM_I:YMM
 {
-	
+	SIMD_OPT void operator=(const __m256i&i){this->i=i;}
 };
 
 #include "i/vi8x32.hpp"

@@ -8,4 +8,6 @@ struct VF64x4:YMM_D
 	SIMD_OPT void storeu(f3*p) const{_mm256_storeu_pd(p,d);}
 	SIMD_OPT void stream(f3*p) const{_mm256_stream_pd(p,d);}
 	SIMD_OPT operator __m256d()const{return d;}
+
+	
 };

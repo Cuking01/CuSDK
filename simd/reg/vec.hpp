@@ -1,6 +1,6 @@
 #pragma once
 
-struct Vec_Reg_Base
+struct Vec_Reg_Base:Reg_Base
 {
 	
 };

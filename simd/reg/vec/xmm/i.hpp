@@ -2,7 +2,7 @@
 
 struct XMM_I:XMM
 {
-	
+	SIMD_OPT void operator=(const __m128i&i){this->i=i;}
 };
 
 #include "i/vi8x16.hpp"

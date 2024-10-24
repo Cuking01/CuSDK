@@ -3,7 +3,16 @@
 template<auto opt,Reg_T Reciver,Lazy_Eval_Arg_T... Args> requires (lazy_eval_count<Args...> <=1)
 struct Lazy_Eval_Record
 {
+	template<typename Arg>
+	static constexpr u2 arg_size()
+	{
+		if constexpr(Reg_T<Arg>||CInt_T<Arg>)return 0;
+		else if constexpr(Lazy_Eval_Record_T<Arg>)return Arg::max_size;
+		else return Arg::size;
+	}
+
 	static constexpr bool has_lazy_eval=lazy_eval_count<Args...>;
+	static constexpr u2 max_size=std::max(arg_size<Args>()...);
 	using Reciver_Type=Reciver;
 
 	std::tuple<Lazy_Eval_Arg_Convert<Args>...> args;
@@ -45,14 +54,21 @@ struct Lazy_Eval_Record
 		return pack_ref[idx];
 	}
 
-	template<u2 n,std::size_t... ids>
-	ALWAYS_INLINE void eval_helper(Pack_Ref<Reciver,n> pack_r,std::index_sequence<ids...>)
+	template<u2 n,std::size_t extract_id,std::size_t...ids>
+	SIMD_OPT void eval_one(Reciver&reciver,Pack_Ref<Reciver,n> pack_r,std::index_sequence<ids...>)
 	{
-		((pack_r[ids]=opt(extract<ids,n>(args,pack_r)...)),...);
+		reciver=opt(extract<extract_id,n>(std::get<ids>(args),pack_r)...);
 	}
 
-	template<u2 n>
-	ALWAYS_INLINE void eval(Pack_Ref<Reciver,n> pack_r)
+
+	template<u2 n,std::size_t... ids>
+	SIMD_OPT void eval_helper(Pack_Ref<Reciver,n> pack_r,std::index_sequence<ids...>)
+	{
+		((eval_one<n,ids>(pack_r[ids],pack_r,std::make_index_sequence<sizeof...(Args)>())),...);
+	}
+
+	template<u2 n> requires (max_size==0||n<=max_size)
+	SIMD_OPT void eval(Pack_Ref<Reciver,n> pack_r)
 	{
 		if constexpr(has_lazy_eval)
 			recurse_eval<n>(pack_r,std::make_index_sequence<sizeof...(Args)>());
@@ -68,7 +84,7 @@ struct FMT_Reg
 	{
 		if constexpr(std::is_same_v<Reg,Arg>)return true;
 		else if constexpr(Reg_Pack_T<Arg>||Pack_Ref_T<Arg>){return std::is_same_v<typename Arg::Reg_Type,Reg>;}
-		else if constexpr(Lazy_Eval_Record_T<Arg>){return std::is_same_v<typename Arg::Reciver,Reg>;}
+		else if constexpr(Lazy_Eval_Record_T<Arg>){return std::is_same_v<typename Arg::Reciver_Type,Reg>;}
 		else return false;
 	}
 
@@ -76,6 +92,7 @@ struct FMT_Reg
 	static constexpr u2 get_size()
 	{
 		if constexpr(std::is_same_v<Reg,Arg>)return 0;
+		else if constexpr(Lazy_Eval_Record_T<Arg>)return Arg::max_size;
 		else return Arg::size;
 	}
 };
@@ -108,7 +125,7 @@ struct Instruction_FMT
 	}
 
 	template<Lazy_Eval_Arg_T...Args> requires (sizeof...(Args)==arg_n)
-	static constexpr bool get_size()
+	static constexpr u2 get_size()
 	{
 		return std::max(Formats::template get_size<Args>()...);
 	}

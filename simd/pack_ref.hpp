@@ -32,7 +32,7 @@ struct Pack_Ref
 	template<std::same_as<Reg>... Args> requires (sizeof...(Args)==n)
 	ALWAYS_INLINE Pack_Ref(Args&...args):ref{args...} {}
 
-	ALWAYS_INLINE Reg& operator[](u2 idx){return ref[idx].ref;} 
+	ALWAYS_INLINE Reg& operator[](u2 idx) const {return ref[idx].ref;} 
 
 	template<Reg_T T,std::size_t... ids>
 	ALWAYS_INLINE Pack_Ref<T,n> as_impl(std::index_sequence<ids...>) const
@@ -44,6 +44,12 @@ struct Pack_Ref
 	ALWAYS_INLINE Pack_Ref<T,n> as() const
 	{
 		return as_impl<T>(std::make_index_sequence<n>());
+	}
+
+	template<Lazy_Eval_Record_T LER>
+	void operator=(LER ler)
+	{
+		ler.eval(*this);
 	}
 };
 
@@ -80,7 +86,7 @@ struct Pack_CRef
 	template<std::same_as<Reg>... Args> requires (sizeof...(Args)==n)
 	ALWAYS_INLINE Pack_CRef(const Args&...args):ref{args...} {}
 
-	ALWAYS_INLINE const Reg& operator[](u2 idx){return ref[idx].ref;}
+	ALWAYS_INLINE const Reg& operator[](u2 idx) const {return ref[idx].ref;}
 
 	template<Reg_T T,std::size_t... ids>
 	ALWAYS_INLINE Pack_CRef<T,n> as_impl(std::index_sequence<ids...>) const

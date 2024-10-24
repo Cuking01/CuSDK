@@ -16,9 +16,10 @@ struct ZMM:Vec_Reg_Base
 		return (const_with_t<T,B>&)(const_with_t<ZMM,B>&)self;
 	}
 
-	ALWAYS_INLINE void operator=(const __m512i&i){this->i=i;}
-	ALWAYS_INLINE void operator=(const __m512 &f){this->f=f;}
-	ALWAYS_INLINE void operator=(const __m512d&d){this->d=d;}
-	ALWAYS_INLINE void operator=(const __m512h&h){this->h=h;}
+	SIMD_OPT void operator=(const __m512i&i){this->i=i;}
+	SIMD_OPT void operator=(const __m512 &f){this->f=f;}
+	SIMD_OPT void operator=(const __m512d&d){this->d=d;}
+	SIMD_OPT void operator=(const __m512h&h){this->h=h;}
+
 };
 

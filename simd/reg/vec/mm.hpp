@@ -10,6 +10,7 @@ struct MM:Vec_Reg_Base
 		return (const_with_t<T,B>&)(const_with_t<XMM,B>&)self;
 	}
 
-	ALWAYS_INLINE void operator=(const __m64&reg){this->reg=reg;}
+	SIMD_OPT void operator=(const __m64&reg){this->reg=reg;}
+
 };
 

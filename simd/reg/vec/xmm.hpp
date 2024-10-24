@@ -16,10 +16,6 @@ struct XMM:Vec_Reg_Base
 		return (const_with_t<T,B>&)(const_with_t<XMM,B>&)self;
 	}
 
-	ALWAYS_INLINE void operator=(const __m128i&i){this->i=i;}
-	ALWAYS_INLINE void operator=(const __m128 &f){this->f=f;}
-	ALWAYS_INLINE void operator=(const __m128d&d){this->d=d;}
-	ALWAYS_INLINE void operator=(const __m128h&h){this->h=h;}
 };
 
 #include "xmm/i.hpp"
