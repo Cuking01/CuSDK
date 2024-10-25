@@ -54,8 +54,10 @@ int main() try
 
 	p2=p2-v2;
 
-	p=shuffle(p,CInt<0x55>());
-	p[0].print("p[0]");
+	p.load(a<s2>,a<s2>,a<s2>,a<s2>);
+	p=shuffle(p,CInt_Pack<0x55,0x77,0x99,0xbb>());
+	for(int i=0;i<4;i++)
+		p[i].print(std::format(">>p[{}]",i));
 
 	Pack<VI64x4,4> p64_=p*v;
 	p64_[0].print("p64_");
