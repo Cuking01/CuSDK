@@ -1,5 +1,6 @@
 #pragma once
 
+
 template<Reg_T Reg,u2 n> requires (n>0)
 struct Pack
 {
@@ -15,37 +16,26 @@ struct Pack
 
 	ALWAYS_INLINE Pack(){}
 
-	template<std::same_as<ele_type>... Args> requires (sizeof...(Args)==n)
-	SIMD_OPT Pack(const Args*...p):reg{p...} {}
+	template<std::same_as<ele_type>... Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT Pack(const Args*...p) {loadu(p...);}
 
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void load(const Args*...p) {ls_opt<&Reg_Type::load>(p...);}
 
-	template<std::size_t... ids>
-	SIMD_OPT Pack(const ele_type*p,std::index_sequence<ids...>):Pack(p+ids*ele_num...) {}
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void loadu(const Args*...p) {ls_opt<&Reg_Type::loadu>(p...);}
 
-	SIMD_OPT Pack(const ele_type*p):Pack(p,std::make_index_sequence<n>()) {}
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream_load(const Args*...p) {ls_opt<&Reg_Type::stream_load>(p...);}
 
-	template<std::same_as<ele_type>... Args,std::size_t... ids>
-	SIMD_OPT void load_impl(std::index_sequence<ids...>,const Args*...p)
-	{
-		((reg[ids].load(p)),...);
-	}
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n)
-	SIMD_OPT void load(const Args*...p)
-	{
-		load_impl(std::make_index_sequence<n>(),p...);
-	}
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
 
-	template<std::size_t... ids>
-	SIMD_OPT void load_helper(const ele_type*p,std::index_sequence<ids...>isq)
-	{
-		load_impl(isq,p+ids*ele_num...);
-	}
-
-	SIMD_OPT void load(const ele_type*p)
-	{
-		load_helper(p,std::make_index_sequence<n>());
-	}
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
 	template<Lazy_Eval_Record_T LER>
 	SIMD_OPT Pack(LER ler)
@@ -58,8 +48,33 @@ struct Pack
 	{
 		ler.eval(Pack_Ref<Reg,n>(*this));
 	}
-};
 
+	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
+	ALWAYS_INLINE auto shuffle() const
+	{
+		return Pack_Ref<Reg,n>(reg[ids]...);
+	}
+
+private:
+	template<auto opt,typename... Ele_Ts,std::size_t... ids>
+	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
+	{
+		(((reg[ids].*opt)(p)),...);
+	}
+
+	template<auto opt,std::size_t... ids>
+	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	{
+		ls_impl<opt>(isq,p+ids*ele_num...);
+	}
+
+	template<auto opt,typename... Ele_Ts>
+	SIMD_OPT void ls_opt(Ele_Ts*...p)
+	{
+		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
+		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
+	}
+};
 
 
 

@@ -12,6 +12,8 @@ struct Pack_Ref
 
 	static constexpr u2 size=n;
 	using Reg_Type=Reg;
+	using ele_type=Reg::ele_type;
+	static constexpr u2 ele_num=Reg::ele_num;
 
 	template<std::size_t... ids>
 	ALWAYS_INLINE Pack_Ref(Pack<Reg,n>&pack,std::index_sequence<ids...>)
@@ -51,6 +53,50 @@ struct Pack_Ref
 	{
 		ler.eval(*this);
 	}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void load(const Args*...p) {ls_opt<&Reg_Type::load>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void loadu(const Args*...p) {ls_opt<&Reg_Type::loadu>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream_load(const Args*...p) {ls_opt<&Reg_Type::stream_load>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
+
+	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
+	ALWAYS_INLINE auto shuffle() const
+	{
+		return Pack_Ref<Reg,n>(ref[ids].ref...);
+	}
+	
+private:
+	template<auto opt,typename... Ele_Ts,std::size_t... ids>
+	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
+	{
+		(((ref[ids].ref.*opt)(p)),...);
+	}
+
+	template<auto opt,std::size_t... ids>
+	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	{
+		ls_impl<opt>(isq,p+ids*ele_num...);
+	}
+
+	template<auto opt,typename... Ele_Ts>
+	SIMD_OPT void ls_opt(Ele_Ts*...p)
+	{
+		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
+		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
+	}
 };
 
 
@@ -66,6 +112,15 @@ struct Pack_CRef
 
 	static constexpr u2 size=n;
 	using Reg_Type=Reg;
+	using ele_type=Reg::ele_type;
+	static constexpr u2 ele_num=Reg::ele_num;
+
+	template<std::size_t... ids>
+	ALWAYS_INLINE Pack_CRef(const Pack_Ref<Reg,n>&pref,std::index_sequence<ids...>)
+		:ref{pref[ids]...}
+	{}
+
+	ALWAYS_INLINE Pack_CRef(Pack_Ref<Reg,n> pref):Pack_CRef(pref,std::make_index_sequence<n>()){}
 
 	template<std::size_t... ids>
 	ALWAYS_INLINE Pack_CRef(const Pack<Reg,n>&pack,std::index_sequence<ids...>)
@@ -98,5 +153,40 @@ struct Pack_CRef
 	ALWAYS_INLINE Pack_CRef<T,n> as() const
 	{
 		return as_impl<T>(std::make_index_sequence<n>());
+	}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
+
+	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
+	ALWAYS_INLINE auto shuffle() const
+	{
+		return Pack_CRef<Reg,n>(ref[ids].ref...);
+	}
+
+private:
+	template<auto opt,typename... Ele_Ts,std::size_t... ids>
+	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
+	{
+		(((ref[ids].ref.*opt)(p)),...);
+	}
+
+	template<auto opt,std::size_t... ids>
+	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	{
+		ls_impl<opt>(isq,p+ids*ele_num...);
+	}
+
+	template<auto opt,typename... Ele_Ts>
+	SIMD_OPT void ls_opt(Ele_Ts*...p)
+	{
+		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
+		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
 	}
 };

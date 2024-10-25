@@ -18,7 +18,7 @@ concept Lazy_Eval_Arg_T=Reg_Like_T<T>||Imm_T<T>||Lazy_Eval_Record_T<T>;
 template<typename... T>
 constexpr u2 lazy_eval_count=(Lazy_Eval_Record_T<T>+...+0u);
 
-template<auto opt,Reg_T Reciver,Lazy_Eval_Arg_T... Args> requires (lazy_eval_count<Args...> <=1)
+template<auto opt,Reg_T Reciver,Lazy_Eval_Arg_T... Args> requires (lazy_eval_count<Args...> ==0)
 struct Lazy_Eval_Record;
 
 template<Lazy_Eval_Arg_T T>
