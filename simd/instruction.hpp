@@ -145,8 +145,17 @@ struct Instruction_FMT
 	}
 };
 
+
+
 template<typename T>
-using make_fmt_helper=std::conditional_t<Reg_T<T>,FMT_Reg<T>,FMT_Imm>;
+struct Make_Fmt_Helper{using type=FMT_Imm;};
+
+template<Reg_T T>
+struct Make_Fmt_Helper<T>{using type=FMT_Reg<T>;};
+
+// 因为conditional_t不能惰性实例化FMT_Reg<T>，导致传入非寄存器类型时出错，改用上面的类+特化实现
+// template<typename T>
+// using make_fmt_helper=std::conditional_t<Reg_T<T>,FMT_Reg<T>,FMT_Imm>;
 
 template<typename... T>
-using IFMT=Instruction_FMT<make_fmt_helper<T>...>;
+using IFMT=Instruction_FMT<typename Make_Fmt_Helper<T>::type...>;

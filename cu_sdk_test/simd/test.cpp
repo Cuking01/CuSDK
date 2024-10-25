@@ -15,11 +15,11 @@ int main() try
 	using pr=Pack_Ref<VI32x8,4>;
 	
 
-	a<s2>[0]=1;
-	a<s2>[1]=1;
-	a<s2>[2]=4;
-	a<s2>[3]=5;
-	a<s2>[4]=1;
+	a<s2>[0]=-1;
+	a<s2>[1]=-1;
+	a<s2>[2]=-4;
+	a<s2>[3]=-5;
+	a<s2>[4]=-1;
 	a<s2>[5]=4;
 	a<s2>[6]=1;
 	a<s2>[7]=9;
@@ -53,6 +53,9 @@ int main() try
 	Pack<VI32x8,4> p2=p+v;
 
 	p2=p2-v2;
+
+	p=shuffle(p,CInt<0x55>());
+	p[0].print("p[0]");
 
 	Pack<VI64x4,4> p64_=p*v;
 	p64_[0].print("p64_");

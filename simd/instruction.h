@@ -45,11 +45,11 @@ using Lazy_Eval_Arg_Convert=Lazy_Eval_Arg_Convert_Impl<T>::type;
 template<auto opt,Lazy_Eval_Arg_T... Args>
 constexpr bool is_lazy_eval_record_v<Lazy_Eval_Record<opt,Args...>> =true;
 
-//三种格式，向量寄存器，掩码寄存器，立即数
+//三种格式，向量寄存器，掩码寄存器，立即数，其中前两者都用FMT_Reg
 template<Reg_T Reg>
 struct FMT_Reg;
 struct FMT_Imm;
 
 template<typename T>
-concept Instruction_FMT_Indicator=Instance_Of<FMT_Reg,T>||std::same_as<T,FMT_Imm>;
+concept Instruction_FMT_Indicator=std::same_as<T,FMT_Imm>||Instance_Of<FMT_Reg,T>;
 

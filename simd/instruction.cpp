@@ -21,5 +21,17 @@ SIMD_OPT auto operator&(const A&a,const B&b)
 template<typename A,typename B> requires (IFMT<VI32x8,VI32x8>::check<A,B>())
 SIMD_OPT auto operator*(const A&a,const B&b)
 {
+	return Lazy_Eval_Record<_mm256_mul_epi32,VI64x4,A,B>(a,b);
+}
+
+template<typename A,typename B> requires (IFMT<VU32x8,VU32x8>::check<A,B>())
+SIMD_OPT auto operator*(const A&a,const B&b)
+{
 	return Lazy_Eval_Record<_mm256_mul_epu32,VI64x4,A,B>(a,b);
+}
+
+template<typename A,typename B> requires (IFMT<VI32x8,FMT_Imm>::check<A,B>())
+SIMD_OPT auto shuffle(const A&a,const B&b)
+{
+	return Lazy_Eval_Record<_mm256_shuffle_epi32,VI32x8,A,B>(a,b);
 }
