@@ -2,7 +2,10 @@
 
 struct Reg_Base;
 
+#ifdef __AVX512F__
 #include "reg/k.h"
+#endif
+
 #include "reg/vec.h"
 
 

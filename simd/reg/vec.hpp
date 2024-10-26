@@ -14,6 +14,9 @@ struct Vec_Reg:MM_Base
 
 	SIMD_OPT Vec_Reg(){}
 	SIMD_OPT Vec_Reg(const ele_type*p){loadu(p);}
+	template<Lazy_Eval_Record_T LER>
+	SIMD_OPT Vec_Reg(LER ler){ler.eval(Pack_Ref<Vec_Reg,1>(*this));}
+
 	SIMD_OPT void load  (const ele_type*p){MM_Base::load(p);}
 	SIMD_OPT void loadu (const ele_type*p){MM_Base::loadu(p);}
 	SIMD_OPT void stream_load(const ele_type*p){MM_Base::stream_load(p);}
@@ -41,5 +44,11 @@ struct Vec_Reg:MM_Base
 
 #include "vec/mm.hpp"
 #include "vec/xmm.hpp"
+
+#ifdef __AVX__
 #include "vec/ymm.hpp"
+#endif
+
+#ifdef __AVX512F__
 #include "vec/zmm.hpp"
+#endif

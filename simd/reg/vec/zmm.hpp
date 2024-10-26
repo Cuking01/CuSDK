@@ -16,11 +16,12 @@ struct ZMM:Vec_Reg_Base
 		return (const_with_t<T,B>&)(const_with_t<ZMM,B>&)self;
 	}
 
-	SIMD_OPT void operator=(const __m512i&i){this->i=i;}
-	SIMD_OPT void operator=(const __m512 &f){this->f=f;}
-	SIMD_OPT void operator=(const __m512d&d){this->d=d;}
-	SIMD_OPT void operator=(const __m512h&h){this->h=h;}
-
+	SIMD_OPT void load  (const void*p){i=_mm512_load_si512((__m512i*)p);}
+	SIMD_OPT void loadu (const void*p){i=_mm512_loadu_si512((__m512i*)p);}
+	SIMD_OPT void stream_load(const void*p){i=_mm512_stream_load_si512((__m512i*)p);}
+	SIMD_OPT void store (void*p) const{_mm512_store_si512((__m512i*)p,i);}
+	SIMD_OPT void storeu(void*p) const{_mm512_storeu_si512((__m512i*)p,i);}
+	SIMD_OPT void stream(void*p) const{_mm512_stream_si512((__m512i*)p,i);}
 };
 
 struct ZMM_I:ZMM

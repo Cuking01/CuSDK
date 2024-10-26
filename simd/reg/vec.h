@@ -10,5 +10,11 @@ concept Vec_Reg_T=std::derived_from<T,Vec_Reg_Base>&&Non_CV_T<T>;
 
 #include "vec/mm.h"
 #include "vec/xmm.h"
+
+#ifdef __AVX__
 #include "vec/ymm.h"
+#endif
+
+#ifdef __AVX512F__
 #include "vec/zmm.h"
+#endif

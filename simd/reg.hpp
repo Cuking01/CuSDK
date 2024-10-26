@@ -9,5 +9,8 @@ struct Reg_Base
 	}
 };
 
+#ifdef __AVX512F__
 #include "reg/k.hpp"
+#endif
+
 #include "reg/vec.hpp"

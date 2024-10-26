@@ -42,11 +42,14 @@ struct YMM_D:YMM
 	SIMD_OPT operator __m256d() const {return this->d;}
 };
 
+
+#ifdef __AVX512F__
 struct YMM_H:YMM
 {
 	SIMD_OPT void operator=(const __m256h&h){this->h=h;}
 	SIMD_OPT operator __m256h() const {return this->h;}
 };
+#endif
 
 using VI8x32=Vec_Reg<s0,32,YMM_I>;
 using VI16x16=Vec_Reg<s1,16,YMM_I>;
@@ -64,5 +67,6 @@ using VF32x8=Vec_Reg<f2,8,YMM_F>;
 
 using VF64x4=Vec_Reg<f3,4,YMM_D>;
 
+#ifdef __AVX512F__
 using VF16x16=Vec_Reg<_Float16,16,YMM_H>;
-
+#endif

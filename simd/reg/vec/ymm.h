@@ -20,8 +20,12 @@ struct YMM_D;
 template<typename T>
 concept YMM_D_T=std::derived_from<T,YMM_D>;
 
+
+#ifdef __AVX512F__
+
 struct YMM_H;
 
 template<typename T>
 concept YMM_H_T=std::derived_from<T,YMM_H>;
 
+#endif

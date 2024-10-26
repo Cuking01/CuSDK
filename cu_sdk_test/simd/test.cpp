@@ -10,10 +10,17 @@ alignas(64) T b[64];
 
 int main() try
 {
+	static_assert(avx2);
+	static_assert(__SSE2__);
 	using vec=VI32x8;
 	using pvec=Pack<VI32x8,4>;
 	using pr=Pack_Ref<VI32x8,4>;
 	
+	VI32x16 vz(a<s2>);
+	Pack<VI32x16,4> pvc(a<s2>);
+	int x=reduce_add(vz);
+
+	Scale_Pack<s2,4> scale_p=reduce_add(pvc);
 
 	a<s2>[0]=-1;
 	a<s2>[1]=-1;
@@ -24,16 +31,28 @@ int main() try
 	a<s2>[6]=1;
 	a<s2>[7]=9;
 
-	for(int i=0;i<64;i++)
-		printf("%d\n",a<s2>[i]);
+	Scale_Pack sp(6,7,8,9);
+	Scale_Pack_Ref<s2,4> spr(a<s2>[0],a<s2>[1],a<s2>[2],a<s2>[3]),spr2(sp),spr3(a<s2>[0]),spr4(spr2);
+
 
 	VI32x8 v(a<s2>);
 	v.load(a<s2>);
 
+	v=set(1,2,3,5,5,6,7,8);
+
 	Pack<VI32x8,4> p(a<s2>);
 	p.load(a<s2>,a<s2>+16,a<s2>+24,a<s2>+48);
 	//p.load(a<s2>+0,a<s2>+8);
-
+	p=set(
+		Scale_Pack(6,7,8,9),
+		Scale_Pack<int,4>(998),
+		Scale_Pack<int,4>(1,2,3,4),
+		Scale_Pack<int,4>(1,2,3,4),
+		Scale_Pack<int,4>(1,2,3,4),
+		Scale_Pack<int,4>(1,2,3,4),
+		Scale_Pack<int,4>(1,2,3,4),
+		Scale_Pack<int,4>(1,2,3,4)
+	);
 	for(int i=0;i<4;i++)
 		p[i].print("p[i]");
 
@@ -44,9 +63,7 @@ int main() try
 
 	v.print("v");
 	
-	vec v2;
-
-	v2=v+v;
+	vec v2=v+v;
 
 	v2.print("v2=v+v");
 

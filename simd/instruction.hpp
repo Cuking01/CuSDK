@@ -1,82 +1,80 @@
 #pragma once
 
-template<auto opt,Reg_T Reciver,Lazy_Eval_Arg_T... Args> requires (lazy_eval_count<Args...> ==0)
+template<auto opt,Reciver_T Reciver,Lazy_Eval_Arg_T... Args>
 struct Lazy_Eval_Record
 {
 	template<typename Arg>
 	static constexpr u2 arg_size()
 	{
-		if constexpr(Reg_T<Arg>||CInt_T<Arg>)return 0;
+		if constexpr(Reg_T<Arg>||CInt_T<Arg>||Scale_T<Arg>)return 0;
 		else if constexpr(Lazy_Eval_Record_T<Arg>)return Arg::max_size;
 		else return Arg::size;
 	}
 
-	static constexpr bool has_lazy_eval=lazy_eval_count<Args...>;
-	static constexpr u2 max_size=std::max(arg_size<Args>()...);
+	static constexpr u2 max_size=std::max({arg_size<Args>()...});
 	using Reciver_Type=Reciver;
+	
 
 	std::tuple<Lazy_Eval_Arg_Convert<Args>...> args;
 
 	ALWAYS_INLINE Lazy_Eval_Record(const Args&... args):args{args...} {}
 
-	template<u2 n,typename Reciver_Derived> requires ((max_size==0||n<=max_size)&&std::derived_from<Reciver_Derived,Reciver>)
-	SIMD_OPT void eval(Pack_Ref<Reciver_Derived,n> pack_r)
+	template<u2 n,typename Reciver_Derived> requires ((max_size==0||n<=max_size)&&(std::derived_from<Reciver_Derived,Reciver>))
+	SIMD_OPT void eval(Pack_Ref<Reciver_Derived,n> pack_r) const
 	{
-		if constexpr(has_lazy_eval)
-			recurse_eval<n,Reciver_Derived>(pack_r,std::make_index_sequence<sizeof...(Args)>());
-		eval_helper<n>(pack_r,std::make_index_sequence<n>());
+		eval_helper(pack_r,std::make_index_sequence<n>());
+	}
+
+	template<u2 n,typename Reciver_Scale> requires ((max_size==0||n<=max_size)&&(std::is_same_v<Reciver_Scale,Reciver>))
+	SIMD_OPT void eval(Scale_Pack_Ref<Reciver_Scale,n> pack_r) const
+	{
+		eval_helper(pack_r,std::make_index_sequence<n>());
+	}
+
+	template<Scale_T Scale>
+	SIMD_OPT operator Scale() const
+	{
+		Scale scale;
+		eval(Scale_Pack_Ref<Scale,1>(scale));
+		return scale;
 	}
 
 private:
-	template<u2 n,std::size_t idx,typename Reciver_Derived,typename Arg>
-	ALWAYS_INLINE void recurse_eval_helper(Pack_Ref<Reciver_Derived,n> pack_r){}
-
-	template<u2 n,std::size_t idx,typename Reciver_Derived,typename Arg> requires (is_lazy_eval_record_v<Arg>)
-	ALWAYS_INLINE void recurse_eval_helper(Pack_Ref<Reciver_Derived,n> pack_r)
-	{
-		std::get<idx>(args).eval(pack_r.template as<typename Arg::Reciver_T>());
-	}
-
-	template<u2 n,typename Reciver_Derived,std::size_t... ids> requires (sizeof...(ids)==sizeof...(Args))
-	ALWAYS_INLINE void recurse_eval(Pack_Ref<Reciver_Derived,n> pack_r,std::index_sequence<ids...>)
-	{
-		((recurse_eval_helper<n,ids,Reciver_Derived,decltype(std::get<ids>(args))>(pack_r)),...);
-	}
-
-	template<u2 idx,u2 n,typename Reciver_Derived,Reg_Like_T T>
-	ALWAYS_INLINE decltype(auto) extract(const T&arg,const Pack_Ref<Reciver_Derived,n>&)
+	template<u2 idx,Reg_Like_T T>
+	ALWAYS_INLINE decltype(auto) extract(const T&arg,const auto&) const
 	{
 		if constexpr(Reg_T<T>)return (arg);
 		else return arg[idx];
 	}
 
-	template<u2 idx,u2 n,typename Reciver_Derived,Imm_T T>
-	ALWAYS_INLINE consteval auto extract(const T&arg,const Pack_Ref<Reciver_Derived,n>&)
+	template<u2 idx,Imm_T T>
+	ALWAYS_INLINE consteval auto extract(const T&arg,const auto&) const
 	{
 		if constexpr(CInt_T<T>)return T::value;
 		else return T::template get<idx>;
 	}
 
-	template<u2 idx,u2 n,typename Reciver_Derived,Lazy_Eval_Record_T T>
-	ALWAYS_INLINE const Reciver_Derived& extract(const T&arg,const Pack_Ref<Reciver_Derived,n>&pack_ref)
+	template<u2 idx,Scale_Like_T T>
+	ALWAYS_INLINE auto extract(const T&arg,const auto&pack_ref) const
 	{
-		return pack_ref[idx];
+		if constexpr(Scale_Pack_T<T>)return arg[idx];
+		else return arg;
 	}
 
-	template<u2 n,std::size_t extract_id,typename Reciver_Derived,std::size_t...ids>
-	SIMD_OPT void eval_one(Reciver_Derived&reciver,Pack_Ref<Reciver_Derived,n> pack_r,std::index_sequence<ids...>)
+	template<std::size_t extract_id,std::size_t...ids>
+	SIMD_OPT void eval_one(auto&reciver,auto&pack_r,std::index_sequence<ids...>) const
 	{
-		reciver=opt(extract<extract_id,n>(std::get<ids>(args),pack_r)...);
+		reciver=opt(extract<extract_id>(std::get<ids>(args),pack_r)...);
 	}
 
 
-	template<u2 n,typename Reciver_Derived,std::size_t... ids>
-	SIMD_OPT void eval_helper(Pack_Ref<Reciver_Derived,n> pack_r,std::index_sequence<ids...>)
+	template<std::size_t... ids>
+	SIMD_OPT void eval_helper(auto&pack_r,std::index_sequence<ids...>) const
 	{
-		((eval_one<n,ids>(pack_r[ids],pack_r,std::make_index_sequence<sizeof...(Args)>())),...);
+		((eval_one<ids>(pack_r[ids],pack_r,std::make_index_sequence<sizeof...(Args)>())),...);
 	}
 
-	
+
 };
 
 template<Reg_T Reg>
@@ -86,7 +84,7 @@ struct FMT_Reg
 	static constexpr bool check_type()
 	{
 		if constexpr(std::derived_from<Arg,Reg>)return true;
-		else if constexpr(Reg_Pack_T<Arg>||Pack_Ref_T<Arg>){return std::derived_from<typename Arg::Reg_Type,Reg>;}
+		else if constexpr(Reg_Pack_T<Arg>||Pack_CRef_T<Arg>){return std::derived_from<typename Arg::Reg_Type,Reg>;}
 		else if constexpr(Lazy_Eval_Record_T<Arg>){return std::derived_from<typename Arg::Reciver_Type,Reg>;}
 		else return false;
 	}
@@ -116,6 +114,25 @@ struct FMT_Imm
 	}
 };
 
+template<Scale_T Scale>
+struct FMT_Scale
+{
+	template<typename Arg>
+	static constexpr bool check_type()
+	{
+		if constexpr(Scale_Pack_T<Arg>||Scale_Pack_Ref_T<Arg>)return std::is_same_v<typename Arg::Scale_Type,Scale>;
+		else return std::is_same_v<Arg,Scale>;
+	}
+
+	template<typename Arg> requires(check_type<Arg>())
+	static constexpr u2 get_size()
+	{
+		if constexpr(Scale_Pack_T<Arg>||Scale_Pack_Ref_T<Arg>)return Arg::size;
+		else return 0;
+	}
+
+};
+
 template<Instruction_FMT_Indicator... Formats>
 struct Instruction_FMT
 {
@@ -130,7 +147,7 @@ struct Instruction_FMT
 	template<Lazy_Eval_Arg_T...Args> requires (sizeof...(Args)==arg_n)
 	static constexpr u2 get_size()
 	{
-		return std::max(Formats::template get_size<Args>()...);
+		return std::max({Formats::template get_size<Args>()...});
 	}
 
 	template<Lazy_Eval_Arg_T... Args> requires (sizeof...(Args)==arg_n)
@@ -152,6 +169,9 @@ struct Make_Fmt_Helper{using type=FMT_Imm;};
 
 template<Reg_T T>
 struct Make_Fmt_Helper<T>{using type=FMT_Reg<T>;};
+
+template<Scale_T T>
+struct Make_Fmt_Helper<T>{using type=FMT_Scale<T>;};
 
 // 因为conditional_t不能惰性实例化FMT_Reg<T>，导致传入非寄存器类型时出错，改用上面的类+特化实现
 // template<typename T>

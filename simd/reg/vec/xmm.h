@@ -20,9 +20,12 @@ struct XMM_D;
 template<typename T>
 concept XMM_D_T=std::derived_from<T,XMM_D>;
 
+#ifdef __AVX512F__
+
 struct XMM_H;
 
 template<typename T>
 concept XMM_H_T=std::derived_from<T,XMM_H>;
 
+#endif
 
