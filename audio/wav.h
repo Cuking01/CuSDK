@@ -24,15 +24,31 @@ struct WAV_Header
     char data_header[4] = {'d', 'a', 't', 'a'}; // Contains "data"
     u2 data_bytes; // Number of bytes in data. Number of samples * num_channels * sample byte size
 
+
     void load(File&fp)
     {
-        u3 read_size=fread(this,44,1,fp);
+        u3 read_size=fread(this,1,12,fp);
 
         auto err_desc=std::format("wav file [{}] data is damaged.",fp.name());
 
-        cu_assert(read_size==1,err_desc);
-        //cu_assert(add_s(data_bytes,36)==wav_size,err_desc);
+        cu_assert(read_size==12,err_desc);
 
+        while(1)
+        {
+            read_size=fread((byte*)this+12,1,8,fp);
+            cu_assert(read_size==8,err_desc);
+            if(memcmp(fmt_header,"fmt ",4)==0)
+            {
+                read_size=fread((byte*)this+20,1,16,fp);
+                cu_assert(read_size==16,err_desc);
+                break;
+            }
+            else
+            {
+                cu_assert(fseek(fp,fmt_chunk_size,SEEK_CUR)==0,err_desc);
+            }
+        }
+        
         cu_assert(fmt_chunk_size==16,err_desc);
         cu_assert(num_channels>0,err_desc);
         cu_assert(sample_rate>0,err_desc);
@@ -44,6 +60,20 @@ struct WAV_Header
         bool float_restrict=audio_format==wav_format_float&&is(bit_depth).one_of(32,64);
 
         cu_assert(integer_restrict||float_restrict,err_desc);
+
+        while(1)
+        {
+            read_size=fread((byte*)this+36,1,8,fp);
+            cu_assert(read_size==8,err_desc);
+            if(memcmp(data_header,"data",4)==0)
+            {
+                break;
+            }
+            else
+            {
+                cu_assert(fseek(fp,data_bytes,SEEK_CUR)==0,err_desc);
+            }
+        }
 
         //数值约束
         cu_assert(byte_rate==mul_s(byte_per_sample,sample_rate,num_channels),err_desc);
