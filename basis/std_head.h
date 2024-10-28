@@ -4,6 +4,7 @@
 #include<time.h>
 
 #include<algorithm>
+#include<bit>
 #include<concepts>
 #include<format>
 #include<iostream>

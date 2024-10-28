@@ -8,90 +8,58 @@ template<typename T>
 alignas(64) T b[64];
 
 
+ALWAYS_INLINE void Transpose(Pack_Ref<VI32x8,8> mat,Pack_Ref<VI32x8,8> tmp)
+{
+	tmp(0,1,2,3)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0010'0000>);
+	tmp(4,5,6,7)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0011'0001>);
+	mat(0,1,4,5).as<VI64x4>()=unpacklo(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
+	mat(2,3,6,7).as<VI64x4>()=unpackhi(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
+	tmp=shuffle(mat,cint<0b1101'1000>);
+	mat(0,2,4,6)=unpacklo(tmp(0,2,4,6),tmp(1,3,5,7));
+	mat(1,3,5,7)=unpackhi(tmp(0,2,4,6),tmp(1,3,5,7));
+}
+
+template<u2 n>
+ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t,VU32x8& vmod,VU32x8& vmodp)
+{
+	t=a*b; //t0
+
+	a=a>>cint<32>;b=b>>cint<32>;
+	b=a*b; //t1
+
+	a=t*vmodp;
+	t=t>>cint<32>;
+	t=blend(t,b,cint<0x1010'1010>);
+	b=b*vmodp;
+
+	a=a*vmod;b=b*vmod;
+	
+	a=a>>cint<32>;
+	a=blend(a,b,cint<0x1010'1010>);
+	
+	t=t-a;
+	t=t+vmod;
+	b=t>vmod;
+	b=b&vmod;
+	t=t-b;
+}
+
 int main() try
 {
-	static_assert(avx2);
-	static_assert(__SSE2__);
-	using vec=VI32x8;
-	using pvec=Pack<VI32x8,4>;
-	using pr=Pack_Ref<VI32x8,4>;
-	
-	VI32x16 vz(a<s2>);
-	Pack<VI32x16,4> pvc(a<s2>);
-	int x=reduce_add(vz);
+	for(int i=0;i<64;i++)
+		a<u2>[i]=rand();
 
-	Scale_Pack<s2,4> scale_p=reduce_add(pvc);
+	Pack<VU32x8,3> x(a<u2>),y(a<u2>+24);
 
-	a<s2>[0]=-1;
-	a<s2>[1]=-1;
-	a<s2>[2]=-4;
-	a<s2>[3]=-5;
-	a<s2>[4]=-1;
-	a<s2>[5]=4;
-	a<s2>[6]=1;
-	a<s2>[7]=9;
+	VU32x8 vmod=_mm256_broadcastd_epi32(_mm_cvtsi32_si128(a<u2>[0]));
+	vmod.print("vmod");
 
-	Scale_Pack sp(6,7,8,9);
-	Scale_Pack_Ref<s2,4> spr(a<s2>[0],a<s2>[1],a<s2>[2],a<s2>[3]),spr2(sp),spr3(a<s2>[0]),spr4(spr2);
-
-
-	VI32x8 v(a<s2>);
-	v.load(a<s2>);
-
-	v=set(1,2,3,5,5,6,7,8);
-
-	Pack<VI32x8,4> p(a<s2>);
-	p.load(a<s2>,a<s2>+16,a<s2>+24,a<s2>+48);
-	//p.load(a<s2>+0,a<s2>+8);
-	p=set(
-		Scale_Pack(6,7,8,9),
-		Scale_Pack<int,4>(998),
-		Scale_Pack<int,4>(1,2,3,4),
-		Scale_Pack<int,4>(1,2,3,4),
-		Scale_Pack<int,4>(1,2,3,4),
-		Scale_Pack<int,4>(1,2,3,4),
-		Scale_Pack<int,4>(1,2,3,4),
-		Scale_Pack<int,4>(1,2,3,4)
-	);
-	for(int i=0;i<4;i++)
-		p[i].print("p[i]");
-
-	Pack_Ref<VI32x8,4> rf(p);
-
-	rf.load(a<s2>,a<s2>+16,a<s2>+24,a<s2>+48);
-	//rf.load(a<s2>+0,a<s2>+8);
-
-	v.print("v");
-	
-	vec v2=v+v;
-
-	v2.print("v2=v+v");
-
-	Pack<VI32x8,4> p2=p+v;
-
-	p2=p2-v2;
-
-	p.load(a<s2>,a<s2>,a<s2>,a<s2>);
-	p=shuffle(p,CInt_Pack<0x55,0x77,0x99,0xbb>());
-	for(int i=0;i<4;i++)
-		p[i].print(std::format(">>p[{}]",i));
-
-	Pack<VI64x4,4> p64_=p*v;
-	p64_[0].print("p64_");
-
-	p=p+v;
-	p=p-v2;
-
-	for(int i=0;i<4;i++)
-		p[i].print("p[i]=p[i]+v-v2");
-
-	for(int i=0;i<4;i++)
-		p2[i].print("p2[i]=p2[i]+v-v2");
-
-	Pack<VI32x8,4> p3=p2&p;
-
-	for(int i=0;i<4;i++)
-		p3[i].print("p3[i]=p2[i]&p[i]");
+	// Pack<VI32x8,8> mat(a<int>),tmp;
+	// for(int i=0;i<8;i++)
+	// 	mat[i].print(std::format("mat[{}]",i));
+	// Transpose(mat,tmp);
+	// for(int i=0;i<8;i++)
+	// 	mat[i].print(std::format("mat[{}]",i));
 }
 catch(std::exception&e)
 {

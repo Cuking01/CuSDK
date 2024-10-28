@@ -1,12 +1,12 @@
 #pragma once
 
-template<std::integral auto cint>
+template<std::integral auto cint> requires (cint>=0&&cint<256)
 struct CInt
 {
 	static constexpr auto value=cint;
 };
 
-template<std::integral auto... cints>
+template<std::integral auto... cints> requires ((cints>=0&&cints<256)&&...)
 struct CInt_Pack
 {
 	static constexpr u2 size=sizeof...(cints);
@@ -27,4 +27,8 @@ struct CInt_Pack
 
 };
 
+template<std::integral auto cint_v>
+constexpr CInt<cint_v> cint;
 
+template<std::integral auto... cints_v>
+constexpr CInt_Pack<cints_v...> cints;

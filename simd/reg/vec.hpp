@@ -5,8 +5,10 @@ struct Vec_Reg_Base:Reg_Base
 	
 };
 
-template<typename Ele_T,u2 Ele_N,typename MM_Base> requires(sizeof(Ele_T)*Ele_N==sizeof(MM_Base))
-struct Vec_Reg:MM_Base
+struct Vec_Reg_Format_Base{};
+
+template<typename Ele_T,u2 Ele_N,typename MM_Base,typename FMT_Base> requires(sizeof(Ele_T)*Ele_N==sizeof(MM_Base))
+struct Vec_Reg:MM_Base,FMT_Base
 {
 	using ele_type=Ele_T;
 	static constexpr u2 ele_num=Ele_N;
@@ -16,6 +18,11 @@ struct Vec_Reg:MM_Base
 	SIMD_OPT Vec_Reg(const ele_type*p){loadu(p);}
 	template<Lazy_Eval_Record_T LER>
 	SIMD_OPT Vec_Reg(LER ler){ler.eval(Pack_Ref<Vec_Reg,1>(*this));}
+
+	SIMD_OPT Vec_Reg(__m256i x){MM_Base::i=x;}
+	SIMD_OPT Vec_Reg(__m256d x){MM_Base::d=x;}
+	SIMD_OPT Vec_Reg(__m256  x){MM_Base::f=x;}
+	SIMD_OPT Vec_Reg(__m256h x){MM_Base::h=x;}
 
 	SIMD_OPT void load  (const ele_type*p){MM_Base::load(p);}
 	SIMD_OPT void loadu (const ele_type*p){MM_Base::loadu(p);}
@@ -45,10 +52,6 @@ struct Vec_Reg:MM_Base
 #include "vec/mm.hpp"
 #include "vec/xmm.hpp"
 
-#ifdef __AVX__
 #include "vec/ymm.hpp"
-#endif
 
-#ifdef __AVX512F__
 #include "vec/zmm.hpp"
-#endif

@@ -77,7 +77,7 @@ private:
 
 };
 
-template<Reg_T Reg>
+template<typename Reg> requires (Reg_T<Reg>||Vec_Reg_Format_T<Reg>)
 struct FMT_Reg
 {
 	template<typename Arg>
@@ -170,6 +170,9 @@ struct Make_Fmt_Helper{using type=FMT_Imm;};
 template<Reg_T T>
 struct Make_Fmt_Helper<T>{using type=FMT_Reg<T>;};
 
+template<Vec_Reg_Format_T T> requires(!Reg_T<T>)
+struct Make_Fmt_Helper<T>{using type=FMT_Reg<T>;};
+
 template<Scale_T T>
 struct Make_Fmt_Helper<T>{using type=FMT_Scale<T>;};
 
@@ -179,3 +182,18 @@ struct Make_Fmt_Helper<T>{using type=FMT_Scale<T>;};
 
 template<typename... T>
 using IFMT=Instruction_FMT<typename Make_Fmt_Helper<T>::type...>;
+
+template<Reg_Like_T T>
+struct get_reg_impl
+{
+	using type=T;
+};
+
+template<typename T> requires (Reg_Pack_T<T>||Pack_Ref_T<T>)
+struct get_reg_impl<T>
+{
+	using type=typename T::Reg_Type;
+};
+
+template<Reg_Like_T T>
+using get_reg=typename get_reg_impl<T>::type;

@@ -1,5 +1,29 @@
 #pragma once
 
+template<u2 mask,std::size_t n,std::size_t...ids>
+struct Make_Mask_Index_Sequence_Helper
+{
+	using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,ids...>::type;
+};
+
+template<u2 mask,std::size_t n,std::size_t...ids> requires (n>0&&(n-1&~mask)==0)
+struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
+{
+	using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,n-1,ids...>::type;
+};
+
+template<u2 mask,std::size_t n,std::size_t...ids> requires (n==0)
+struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
+{
+	using type=std::index_sequence<ids...>;
+};
+
+template<u2 mask,std::size_t n>
+constexpr auto make_mask_index_sequence()
+{
+	return typename Make_Mask_Index_Sequence_Helper<mask,n>::type{};
+}
+
 template<Reg_T Reg,u2 n> requires (n>0)
 struct Pack_Ref
 {
@@ -72,13 +96,20 @@ struct Pack_Ref
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
-	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
-	ALWAYS_INLINE auto shuffle() const
+	template<std::integral...Args> requires (sizeof...(Args)>0)
+	ALWAYS_INLINE auto operator()(Args... args) const
 	{
-		return Pack_Ref<Reg,n>(ref[ids].ref...);
+		return Pack_Ref<Reg,sizeof...(Args)>(ref[args].ref...);
+	}
+
+	template<u2 msk>
+	ALWAYS_INLINE auto mask() const
+	{
+		return mask_impl(make_mask_index_sequence<msk,n>());
 	}
 	
 private:
+
 	template<auto opt,typename... Ele_Ts,std::size_t... ids>
 	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
 	{
@@ -96,6 +127,12 @@ private:
 	{
 		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
 		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
+	}
+
+	template<std::size_t...ids>
+	ALWAYS_INLINE auto mask_impl(std::index_sequence<ids...>) const
+	{
+		return Pack_Ref<Reg,sizeof...(ids)>(ref[ids].ref...);
 	}
 };
 
@@ -164,10 +201,16 @@ struct Pack_CRef
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
-	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
-	ALWAYS_INLINE auto shuffle() const
+	template<std::integral...Args> requires (sizeof...(Args)>0)
+	ALWAYS_INLINE auto operator()(Args... args) const
 	{
-		return Pack_CRef<Reg,n>(ref[ids].ref...);
+		return Pack_CRef<Reg,sizeof...(Args)>(ref[args].ref...);
+	}
+
+	template<u2 msk>
+	ALWAYS_INLINE auto mask() const
+	{
+		return mask_impl(make_mask_index_sequence<msk,n>());
 	}
 
 private:
@@ -188,5 +231,11 @@ private:
 	{
 		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
 		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
+	}
+
+	template<std::size_t...ids>
+	ALWAYS_INLINE auto mask_impl(std::index_sequence<ids...>) const
+	{
+		return Pack_CRef<Reg,sizeof...(ids)>(ref[ids].ref...);
 	}
 };

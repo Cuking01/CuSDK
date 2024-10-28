@@ -26,43 +26,58 @@ struct ZMM:Vec_Reg_Base
 
 struct ZMM_I:ZMM
 {
+#ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512i&i){this->i=i;}
 	SIMD_OPT operator __m512i() const {return this->i;}
+#endif
 };
 
 struct ZMM_F:ZMM
 {
+#ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512 &f){this->f=f;}
 	SIMD_OPT operator __m512() const {return this->f;}
+#endif
 };
 
 struct ZMM_D:ZMM
 {
+#ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512d&d){this->d=d;}
 	SIMD_OPT operator __m512d() const {return this->d;}
+#endif
 };
 
 struct ZMM_H:ZMM
 {
+#ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512h&h){this->h=h;}
 	SIMD_OPT operator __m512h() const {return this->h;}
+#endif
 };
 
-using VI8x64=Vec_Reg<s0,64,ZMM_I>;
-using VI16x32=Vec_Reg<s1,32,ZMM_I>;
-using VI32x16=Vec_Reg<s2,16,ZMM_I>;
-using VI64x8=Vec_Reg<s3,8,ZMM_I>;
-using VI128x4=Vec_Reg<s4,4,ZMM_I>;
 
-using VU8x64=Vec_Reg<u0,64,ZMM_I>;
-using VU16x32=Vec_Reg<u1,32,ZMM_I>;
-using VU32x16=Vec_Reg<u2,16,ZMM_I>;
-using VU64x8=Vec_Reg<u3,8,ZMM_I>;
-using VU128x4=Vec_Reg<u4,4,ZMM_I>;
+struct V8x64:Vec_Reg_Format_Base{};
+struct V16x32:Vec_Reg_Format_Base{};
+struct V32x16:Vec_Reg_Format_Base{};
+struct V64x8:Vec_Reg_Format_Base{};
+struct V128x4:Vec_Reg_Format_Base{};
 
-using VF32x16=Vec_Reg<f2,16,ZMM_F>;
+using VI8x64=Vec_Reg<s0,64,ZMM_I,V8x64>;
+using VI16x32=Vec_Reg<s1,32,ZMM_I,V16x32>;
+using VI32x16=Vec_Reg<s2,16,ZMM_I,V32x16>;
+using VI64x8=Vec_Reg<s3,8,ZMM_I,V64x8>;
+using VI128x4=Vec_Reg<s4,4,ZMM_I,V128x4>;
 
-using VF64x8=Vec_Reg<f3,8,ZMM_D>;
+using VU8x64=Vec_Reg<u0,64,ZMM_I,V8x64>;
+using VU16x32=Vec_Reg<u1,32,ZMM_I,V16x32>;
+using VU32x16=Vec_Reg<u2,16,ZMM_I,V32x16>;
+using VU64x8=Vec_Reg<u3,8,ZMM_I,V64x8>;
+using VU128x4=Vec_Reg<u4,4,ZMM_I,V128x4>;
 
-using VF16x32=Vec_Reg<_Float16,32,ZMM_H>;
+using VF32x16=Vec_Reg<f2,16,ZMM_F,V16x32>;
+
+using VF64x8=Vec_Reg<f3,8,ZMM_D,V64x8>;
+
+using VF16x32=Vec_Reg<_Float16,32,ZMM_H,V16x32>;
 

@@ -20,3 +20,8 @@ struct MM_D;
 template<typename T>
 concept MM_D_T=std::derived_from<T,MM_D>;
 
+struct V8x8;
+struct V16x4;
+struct V32x2;
+struct V64x1;
+

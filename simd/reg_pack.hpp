@@ -49,10 +49,16 @@ struct Pack
 		ler.eval(Pack_Ref<Reg,n>(*this));
 	}
 
-	template<std::unsigned_integral auto...ids> requires (sizeof...(ids)==n)
-	ALWAYS_INLINE auto shuffle() const
+	template<std::integral...Args> requires (sizeof...(Args)>0)
+	ALWAYS_INLINE auto operator()(Args... ids)
 	{
-		return Pack_Ref<Reg,n>(reg[ids]...);
+		return Pack_Ref<Reg,sizeof...(Args)>(reg[ids]...);
+	}
+
+	template<u2 msk>
+	ALWAYS_INLINE auto mask()
+	{
+		return Pack_Ref<Reg,n>(*this).template mask<msk>();
 	}
 
 private:

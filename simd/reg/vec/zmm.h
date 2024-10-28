@@ -20,12 +20,13 @@ struct ZMM_D;
 template<typename T>
 concept ZMM_D_T=std::derived_from<T,ZMM_D>;
 
-#ifdef __AVX512F__
-
 struct ZMM_H;
 
 template<typename T>
 concept ZMM_H_T=std::derived_from<T,ZMM_H>;
 
-#endif
-
+struct V8x64;
+struct V16x32;
+struct V32x16;
+struct V64x8;
+struct V128x4;

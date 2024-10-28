@@ -70,7 +70,7 @@ template<auto opt,Lazy_Eval_Arg_T... Args>
 constexpr bool is_lazy_eval_record_v<Lazy_Eval_Record<opt,Args...>> =true;
 
 //四种格式，向量寄存器，掩码寄存器，立即数，标量，其中前两者都用FMT_Reg
-template<Reg_T Reg>
+template<typename Reg> requires (Reg_T<Reg>||Vec_Reg_Format_T<Reg>)
 struct FMT_Reg;
 struct FMT_Imm;
 template<Scale_T Scale>

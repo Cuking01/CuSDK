@@ -22,16 +22,22 @@ struct MM_F:MM{};
 
 struct MM_D:MM{};
 
-using VI8x8=Vec_Reg<s0,8,MM_I>;
-using VI16x4=Vec_Reg<s1,4,MM_I>;
-using VI32x2=Vec_Reg<s2,2,MM_I>;
-using VI64x1=Vec_Reg<s3,1,MM_I>;
+struct V8x8:Vec_Reg_Format_Base{};
+struct V16x4:Vec_Reg_Format_Base{};
+struct V32x2:Vec_Reg_Format_Base{};
+struct V64x1:Vec_Reg_Format_Base{};
 
-using VU8x8=Vec_Reg<u0,8,MM_I>;
-using VU16x4=Vec_Reg<u1,4,MM_I>;
-using VU32x2=Vec_Reg<u2,2,MM_I>;
-using VU64x1=Vec_Reg<u3,1,MM_I>;
 
-using VF32x2=Vec_Reg<f2,2,MM_F>;
+using VI8x8=Vec_Reg<s0,8,MM_I,V8x8>;
+using VI16x4=Vec_Reg<s1,4,MM_I,V16x4>;
+using VI32x2=Vec_Reg<s2,2,MM_I,V32x2>;
+using VI64x1=Vec_Reg<s3,1,MM_I,V64x1>;
 
-using VF64x1=Vec_Reg<f3,1,MM_D>;
+using VU8x8=Vec_Reg<u0,8,MM_I,V8x8>;
+using VU16x4=Vec_Reg<u1,4,MM_I,V16x4>;
+using VU32x2=Vec_Reg<u2,2,MM_I,V32x2>;
+using VU64x1=Vec_Reg<u3,1,MM_I,V64x1>;
+
+using VF32x2=Vec_Reg<f2,2,MM_F,V32x2>;
+
+using VF64x1=Vec_Reg<f3,1,MM_D,V64x1>;
