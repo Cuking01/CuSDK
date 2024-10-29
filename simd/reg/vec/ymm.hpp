@@ -29,6 +29,8 @@ struct YMM_I:YMM
 #ifdef __AVX__
 	SIMD_OPT void operator=(const __m256i&i){this->i=i;}
 	SIMD_OPT operator __m256i() const {return this->i;}
+	SIMD_OPT YMM_I(){}
+	SIMD_OPT YMM_I(__m256i x){i=x;}
 #endif
 };
 
@@ -37,6 +39,8 @@ struct YMM_F:YMM
 #ifdef __AVX__
 	SIMD_OPT void operator=(const __m256 &f){this->f=f;}
 	SIMD_OPT operator __m256() const {return this->f;}
+	SIMD_OPT YMM_F(){}
+	SIMD_OPT YMM_F(__m256 x){f=x;}
 #endif
 };
 
@@ -45,6 +49,8 @@ struct YMM_D:YMM
 #ifdef __AVX__
 	SIMD_OPT void operator=(const __m256d&d){this->d=d;}
 	SIMD_OPT operator __m256d() const {return this->d;}
+	SIMD_OPT YMM_D(){}
+	SIMD_OPT YMM_D(__m256d x){d=x;}
 #endif
 };
 
@@ -54,6 +60,8 @@ struct YMM_H:YMM
 #ifdef __AVX__
 	SIMD_OPT void operator=(const __m256h&h){this->h=h;}
 	SIMD_OPT operator __m256h() const {return this->h;}
+	SIMD_OPT YMM_H(){}
+	SIMD_OPT YMM_H(__m256h x){h=x;}
 #endif
 };
 

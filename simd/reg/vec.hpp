@@ -19,10 +19,7 @@ struct Vec_Reg:MM_Base,FMT_Base
 	template<Lazy_Eval_Record_T LER>
 	SIMD_OPT Vec_Reg(LER ler){ler.eval(Pack_Ref<Vec_Reg,1>(*this));}
 
-	SIMD_OPT Vec_Reg(__m256i x){MM_Base::i=x;}
-	SIMD_OPT Vec_Reg(__m256d x){MM_Base::d=x;}
-	SIMD_OPT Vec_Reg(__m256  x){MM_Base::f=x;}
-	SIMD_OPT Vec_Reg(__m256h x){MM_Base::h=x;}
+	using MM_Base::MM_Base;
 
 	SIMD_OPT void load  (const ele_type*p){MM_Base::load(p);}
 	SIMD_OPT void loadu (const ele_type*p){MM_Base::loadu(p);}

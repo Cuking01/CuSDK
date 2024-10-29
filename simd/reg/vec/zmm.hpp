@@ -29,6 +29,8 @@ struct ZMM_I:ZMM
 #ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512i&i){this->i=i;}
 	SIMD_OPT operator __m512i() const {return this->i;}
+	SIMD_OPT ZMM_I(){}
+	SIMD_OPT ZMM_I(__m512i x){i=x;}
 #endif
 };
 
@@ -37,6 +39,8 @@ struct ZMM_F:ZMM
 #ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512 &f){this->f=f;}
 	SIMD_OPT operator __m512() const {return this->f;}
+	SIMD_OPT ZMM_F(){}
+	SIMD_OPT ZMM_F(__m512 x){f=x;}
 #endif
 };
 
@@ -45,6 +49,8 @@ struct ZMM_D:ZMM
 #ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512d&d){this->d=d;}
 	SIMD_OPT operator __m512d() const {return this->d;}
+	SIMD_OPT ZMM_D(){}
+	SIMD_OPT ZMM_D(__m512d x){d=x;}
 #endif
 };
 
@@ -53,6 +59,8 @@ struct ZMM_H:ZMM
 #ifdef __AVX512F__
 	SIMD_OPT void operator=(const __m512h&h){this->h=h;}
 	SIMD_OPT operator __m512h() const {return this->h;}
+	SIMD_OPT ZMM_H(){}
+	SIMD_OPT ZMM_H(__m512h x){h=x;}
 #endif
 };
 

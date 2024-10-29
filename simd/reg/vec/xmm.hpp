@@ -22,24 +22,32 @@ struct XMM_I:XMM
 {
 	SIMD_OPT void operator=(const __m128i&i){this->i=i;}
 	SIMD_OPT operator __m128i() const {return this->i;}
+	SIMD_OPT XMM_I(){}
+	SIMD_OPT XMM_I(__m128i x){i=x;}
 };
 
 struct XMM_F:XMM
 {
 	SIMD_OPT void operator=(const __m128 &f){this->f=f;}
 	SIMD_OPT operator __m128() const {return this->f;}
+	SIMD_OPT XMM_F(){}
+	SIMD_OPT XMM_F(__m128 x){f=x;}
 };
 
 struct XMM_D:XMM
 {
 	SIMD_OPT void operator=(const __m128d&d){this->d=d;}
 	SIMD_OPT operator __m128d() const {return this->d;}
+	SIMD_OPT XMM_D(){}
+	SIMD_OPT XMM_D(__m128d x){d=x;}
 };
 
 struct XMM_H:XMM
 {
 	SIMD_OPT void operator=(const __m128h&h){this->h=h;}
 	SIMD_OPT operator __m128h() const {return this->h;}
+	SIMD_OPT XMM_H(){}
+	SIMD_OPT XMM_H(__m128h x){h=x;}
 };
 
 struct V8x16:Vec_Reg_Format_Base{};

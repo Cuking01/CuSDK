@@ -21,7 +21,7 @@ SIMD_OPT auto operator-(const A&a,const B&b)
 	return Lazy_Eval_Record<_mm256_sub_epi32,VI32x8,A,B>(a,b);
 }
 
-template<typename A,typename B> requires (IFMT<YMM_I,YMM_I>::check<A,B>())
+template<typename A,typename B> requires (IFMT<YMM_I,YMM_I>::check<A,B>()&&avx2)
 SIMD_OPT auto operator&(const A&a,const B&b)
 {
 	return Lazy_Eval_Record<_mm256_and_si256,YMM_I,A,B>(a,b);
@@ -45,7 +45,7 @@ SIMD_OPT auto operator*(const A&a,const B&b)
 #include "instruction/swizzle.cpp"
 
 
-template<typename... Args> requires (IFMT<s2,s2,s2,s2,s2,s2,s2,s2>::check<Args...>())
+template<typename... Args> requires (IFMT<s2,s2,s2,s2,s2,s2,s2,s2>::check<Args...>()&&avx)
 SIMD_OPT auto set(const Args&... args)
 {
 	return Lazy_Eval_Record<_mm256_setr_epi32,VI32x8,Args...>(args...);
