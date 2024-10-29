@@ -8,38 +8,38 @@ template<typename T>
 alignas(64) T b[64];
 
 
-template<u2 n>
-ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t,VU32x8& vmod,VU32x8& vmodp)
-{
+// template<u2 n>
+// ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t,VU32x8& vmod,VU32x8& vmodp)
+// {
 
-	using w64=VU64x4;
-	auto ap=a.template as<w64>();
-	auto bp=b.template as<w64>();
-	auto tp=t.template as<w64>();
+// 	using w64=VU64x4;
+// 	auto ap=a.template as<w64>();
+// 	auto bp=b.template as<w64>();
+// 	auto tp=t.template as<w64>();
 
-	tp=a*b; //t0
+// 	tp=a*b; //t0
 
-	ap=ap>>cint<32>;
-	bp=bp>>cint<32>;
-	bp=a*b; //t1
+// 	ap=ap>>cint<32>;
+// 	bp=bp>>cint<32>;
+// 	bp=a*b; //t1
 
-	ap=t*vmodp;
-	tp=tp>>cint<32>;
-	t=blend(t,b,cint<0b1010'1010>);
-	bp=b*vmodp;
+// 	ap=t*vmodp;
+// 	tp=tp>>cint<32>;
+// 	t=blend(t,b,cint<0b1010'1010>);
+// 	bp=b*vmodp;
 
-	ap=a*vmod;
-	bp=b*vmod;
+// 	ap=a*vmod;
+// 	bp=b*vmod;
 	
-	a=a>>cint<32>;
-	a=blend(a,b,cint<0b1010'1010>);
+// 	a=a>>cint<32>;
+// 	a=blend(a,b,cint<0b1010'1010>);
 	
-	t=t-a;
-	t=t+vmod;
-	b=t>vmod;
-	b=b&vmod;
-	t=t-b;
-}
+// 	t=t-a;
+// 	t=t+vmod;
+// 	b=t>vmod;
+// 	b=b&vmod;
+// 	t=t-b;
+// }
 
 ALWAYS_INLINE void Transpose(Pack_Ref<VI32x8,8> mat,Pack_Ref<VI32x8,8> tmp)
 {
