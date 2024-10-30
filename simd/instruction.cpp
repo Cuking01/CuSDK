@@ -1,7 +1,7 @@
 #pragma once
 
 #define make_i_1(name,instrction,ret,iflag,other_req,FMT1) \
-template<typename A> requires(IFMT<FMT1>::check<A>()&&(iflag)&&(other_req)) \
+template<typename A> requires(IFMT<FMT1>::check<A>()&&(iflag)&&(bool)(other_req)) \
 SIMD_OPT auto name(const A&a) \
 { \
 	return Lazy_Eval_Record<instrction,ret,A>(a); \
@@ -9,14 +9,14 @@ SIMD_OPT auto name(const A&a) \
 
 
 #define make_i_2(name,instrction,ret,iflag,other_req,FMT1,FMT2) \
-template<typename A,typename B> requires(IFMT<FMT1,FMT2>::check<A,B>()&&(iflag)&&(other_req)) \
+template<typename A,typename B> requires(IFMT<FMT1,FMT2>::check<A,B>()&&(iflag)&&(bool)(other_req)) \
 SIMD_OPT auto name(const A&a,const B&b) \
 { \
 	return Lazy_Eval_Record<instrction,ret,A,B>(a,b); \
 }
 
 #define make_i_3(name,instrction,ret,iflag,other_req,FMT1,FMT2,FMT3) \
-template<typename A,typename B,typename C> requires(IFMT<FMT1,FMT2,FMT3>::check<A,B,C>()&&(iflag)&&(other_req)) \
+template<typename A,typename B,typename C> requires(IFMT<FMT1,FMT2,FMT3>::check<A,B,C>()&&(iflag)&&(bool)(other_req)) \
 SIMD_OPT auto name(const A&a,const B&b,const C&c) \
 { \
 	return Lazy_Eval_Record<instrction,ret,A,B,C>(a,b,c); \

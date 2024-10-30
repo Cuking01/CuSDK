@@ -197,3 +197,6 @@ struct get_reg_impl<T>
 
 template<Reg_Like_T T>
 using get_reg=typename get_reg_impl<T>::type;
+
+template<typename A,typename B>
+concept reg_same=std::same_as<get_reg<A>,get_reg<B>>;

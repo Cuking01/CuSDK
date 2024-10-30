@@ -1,8 +1,4 @@
 #pragma once
 
-template<typename... Args> requires (IFMT<s2>::check<Args...>()&&avx)
-SIMD_OPT auto set1(const Args&... args)
-{
-	return Lazy_Eval_Record<_mm256_set1_epi32,VI32x8,Args...>(args...);
-}
-
+make_i_1(set1,_mm256_set1_epi32,VI32x8,avx,true,s2)
+make_i_1(set1,_mm256_set1_epi32,VU32x8,avx,true,u2)
