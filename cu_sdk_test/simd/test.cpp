@@ -9,9 +9,16 @@ alignas(64) T b[64];
 
 
 template<u2 n>
+ALWAYS_INLINE void jmod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> tmp,VU32x8&vmod)
+{
+	tmp=a.template as<VI32x8>() > vmod.template as<VI32x8>();
+	tmp=tmp&vmod;
+	a=a-tmp;
+}
+
+template<u2 n>
 ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t,VU32x8& vmod,VU32x8& vmodp)
 {
-
 	using w64=VU64x4;
 	auto ap=a.template as<w64>();
 	auto bp=b.template as<w64>();
@@ -23,28 +30,56 @@ ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU
 	bp=bp>>cint<32>;
 	bp=a*b; //t1
 
-	ap=b*vmodp; //t1
+	ap=t*vmodp;  //t0
 	
-	bp=bp<<cint<32>;
+	tp=tp>>cint<32>;
 	t=blend(t,b,cint<0b1010'1010>);
-	t[0].print("t[0]");
-	bp=t*vmodp;  //t0
+	
+	bp=b*vmodp; //t1
+	
+	t=t+vmod;
 
 	ap=a*vmod;
 	bp=b*vmod;
 	
+	ap=ap>>cint<32>;
+	a=blend(a,b,cint<0b1010'1010>);
+	a=t-a;
+
+	jmod<n>(a,t,vmod);
+}
+
+template<u2 n>
+ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,VU32x8& vmod,VU32x8& vmodp)
+{
+	using w64=VU64x4;
+	auto ap=a.template as<w64>();
+	auto bp=b.template as<w64>();
+	auto tp0=t0.template as<w64>();
+	auto tp1=t1.template as<w64>();
+
+	tp0=a*b;
+	ap=ap>>cint<32>;
 	bp=bp>>cint<32>;
-	a=blend(b,a,cint<0b1010'1010>);
-	a[0].print("asn[0]");
-	t=t-a;
-	t[0].print("ans[0]");
-	t=t+vmod;
-	t[0].print("ans[0]");
-	b=t.template as<VI32x8>() > vmod.template as<VI32x8>();
-	b[0].print("jmod");
-	b=b&vmod;
-	b[0].print("jmod");
-	a=t-b;
+
+	tp1=a*b;
+
+	ap=t0*vmodp;  //t0
+	bp=t1*vmodp;  //t1
+	
+	tp0=tp0>>cint<32>;
+	t0=blend(t0,t1,cint<0b1010'1010>);
+
+	ap=a*vmod;
+	bp=b*vmod;
+
+	t0=t0+vmod;
+	
+	ap=ap>>cint<32>;
+	a=blend(a,b,cint<0b1010'1010>);
+	a=t0-a;
+
+	jmod<n>(a,t0,vmod);
 }
 
 void mul_mod_s(u2 a,u2 b,u2 mod,u2 modp)
@@ -54,7 +89,7 @@ void mul_mod_s(u2 a,u2 b,u2 mod,u2 modp)
 	u2 xl=x;
 	u2 m0=(u3)xl*modp;
 	u2 q0=(u3)m0*mod>>32;
-	u2 ans=xl-q0;
+	u2 ans=xh-q0;
 	printf("xh=%u xl=%u m0=%u q0=%u ans=%u\n",xh,xl,m0,q0,ans);
 }
 
@@ -119,8 +154,8 @@ void test_mul_mod()
 	for(int i=0;i<3;i++)
 		y[i].print(std::format("y[{}]",i));
 
-	Pack<VU32x8,3> tmp;
-	mul_mod<3>(x,y,tmp,vmod,vmodp);
+	Pack<VU32x8,3> tmp,tmp1;
+	mul_mod_4<3>(x,y,tmp,tmp1,vmod,vmodp);
 
 	for(int i=0;i<3;i++)
 		x[i].print(std::format("x[{}]",i));
