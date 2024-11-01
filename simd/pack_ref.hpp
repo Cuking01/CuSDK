@@ -96,8 +96,8 @@ struct Pack_Ref
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
-	template<std::integral...Args> requires (sizeof...(Args)>0)
-	ALWAYS_INLINE auto operator()(Args... args) const
+	template<std::integral...Args> requires (sizeof...(Args)>=2)
+	ALWAYS_INLINE auto operator[](Args... args) const
 	{
 		return Pack_Ref<Reg,sizeof...(Args)>(ref[args].ref...);
 	}
@@ -201,8 +201,8 @@ struct Pack_CRef
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
-	template<std::integral...Args> requires (sizeof...(Args)>0)
-	ALWAYS_INLINE auto operator()(Args... args) const
+	template<std::integral...Args> requires (sizeof...(Args)>=2)
+	ALWAYS_INLINE auto operator[](Args... args) const
 	{
 		return Pack_CRef<Reg,sizeof...(Args)>(ref[args].ref...);
 	}

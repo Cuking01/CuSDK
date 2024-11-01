@@ -14,6 +14,8 @@ struct Pack
 	ALWAYS_INLINE Reg& operator[](u2 idx){return reg[idx];}
 	ALWAYS_INLINE const Reg& operator[](u2 idx) const {return reg[idx];}
 
+
+
 	ALWAYS_INLINE Pack(){}
 
 	template<std::same_as<ele_type>... Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
@@ -49,8 +51,8 @@ struct Pack
 		ler.eval(Pack_Ref<Reg,n>(*this));
 	}
 
-	template<std::integral...Args> requires (sizeof...(Args)>0)
-	ALWAYS_INLINE auto operator()(Args... ids)
+	template<std::integral...Args> requires (sizeof...(Args)>=2)
+	ALWAYS_INLINE auto operator[](Args... ids)
 	{
 		return Pack_Ref<Reg,sizeof...(Args)>(reg[ids]...);
 	}
@@ -63,22 +65,22 @@ struct Pack
 
 private:
 	template<auto opt,typename... Ele_Ts,std::size_t... ids>
-	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
+	SIMD_OPT void ls_impl(this auto&self,std::index_sequence<ids...>,Ele_Ts*...p)
 	{
-		(((reg[ids].*opt)(p)),...);
+		(((self.reg[ids].*opt)(p)),...);
 	}
 
 	template<auto opt,std::size_t... ids>
-	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	SIMD_OPT void ls_helper(this auto&self,auto*p,std::index_sequence<ids...>isq)
 	{
-		ls_impl<opt>(isq,p+ids*ele_num...);
+		self.template ls_impl<opt>(isq,p+ids*ele_num...);
 	}
 
 	template<auto opt,typename... Ele_Ts>
-	SIMD_OPT void ls_opt(Ele_Ts*...p)
+	SIMD_OPT void ls_opt(this auto&self,Ele_Ts*...p)
 	{
-		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
-		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
+		if constexpr(sizeof...(Ele_Ts)==1)self.template ls_helper<opt>(p...,std::make_index_sequence<n>());
+		else self.template ls_impl<opt>(std::make_index_sequence<n>(),p...);
 	}
 };
 

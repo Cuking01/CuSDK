@@ -119,7 +119,7 @@ pv.load(addr,addr+16,add+32,addr+48);   //第二种，写4个地址，分别从4
 
 #### 下标
 
-可以使用下标获取其中的寄存器，如 `p[i]` ，其中 `p` 是一个 `Pack`
+可以使用下标获取其中的寄存器，如 `p[i]` ，其中 `p` 是一个 `Pack`，返回类型是寄存器类型的引用
 
 #### 指令
 
@@ -135,23 +135,23 @@ pa.store(addr4);
 
 #### 提取
 
-可以获取 `Pack` 中一部分元素的引用,返回类型也是 `Pack_Ref`：
+可以获取 `Pack` 中一部分元素的引用，也是用下标运算符，但是参数个数必须至少有两个，返回类型是 `Pack_Ref`：
 
 ```cpp
 Pack<VI32x8,4> pa(addr1);
 VI32x8 v(addr2);
-pa(2,3)=pa(0,1)+v;     //相当于pa[2]=pa[0]+v,pa[3]=pa[1]+v
+pa[2,3]=pa[0,1]+v;     //相当于pa[2]=pa[0]+v,pa[3]=pa[1]+v
 pa.store(addr3);
 ```
 
-也可以重复获取：
+也可以重复提取：
 
 ```cpp
 Pack<VF32x8,4> pa(addr1);
 Pack<VF32x8,2> pb(addr2);
 Pack<VF32x8,8> pc(addr3);
 
-pc=fmadd(pa(0,1,2,3,0,1,2,3),pb(0,1,0,1,0,1,0,1),pc);  //相当于pc[i*2+j]+=pa[i]*pb[j]，其中i从0到3，j从0到1
+pc=fmadd(pa[0,1,2,3,0,1,2,3],pb[0,1,0,1,0,1,0,1],pc);  //相当于pc[i*2+j]+=pa[i]*pb[j]，其中i从0到3，j从0到1
 
 pc.store(addr3);
 ```
@@ -217,13 +217,13 @@ sp=reduce_add(pv);    //sp[i]=_mm256_reduce_add_epi32(pv[i]);
 
 ALWAYS_INLINE void Transpose(Pack_Ref<VI32x8,8> mat,Pack_Ref<VI32x8,8> tmp)
 {
-	tmp(0,1,2,3)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0010'0000>);
-	tmp(4,5,6,7)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0011'0001>);
-	mat(0,1,4,5).as<VI64x4>()=unpacklo(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
-	mat(2,3,6,7).as<VI64x4>()=unpackhi(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
+	tmp[0,1,2,3]=permute2x(mat[0,1,2,3],mat[4,5,6,7],cint<0b0010'0000>);
+	tmp[4,5,6,7]=permute2x(mat[0,1,2,3],mat[4,5,6,7],cint<0b0011'0001>);
+	mat[0,1,4,5].as<VI64x4>()=unpacklo(tmp[0,1,4,5].as<VI64x4>(),tmp[2,3,6,7].as<VI64x4>());
+	mat[2,3,6,7].as<VI64x4>()=unpackhi(tmp[0,1,4,5].as<VI64x4>(),tmp[2,3,6,7].as<VI64x4>());
 	tmp=shuffle(mat,cint<0b1101'1000>);
-	mat(0,2,4,6)=unpacklo(tmp(0,2,4,6),tmp(1,3,5,7));
-	mat(1,3,5,7)=unpackhi(tmp(0,2,4,6),tmp(1,3,5,7));
+	mat[0,2,4,6]=unpacklo(tmp[0,2,4,6],tmp[1,3,5,7]);
+	mat[1,3,5,7]=unpackhi(tmp[0,2,4,6],tmp[1,3,5,7]);
 }
 
 int main()
@@ -300,4 +300,8 @@ SIMD_OPT auto set(const Args&... args)
 ```
 
 其中 `s2` 就是 `int32_t` ，这里主要是引入了标量类型的参数限定。
+
+
+
+适配的指令代码，放在instruction目录下，此目录下还有若干子目录，表示指令分类，分类参考Intel的手册，所有相似的指令放在同一个文件内（相似指前后缀不同，或者仅有mask与否的区别（对avx512），如果中缀不同则认为不相似）。
 

@@ -2,10 +2,10 @@
 #include "../../simd.h"
 
 template<typename T>
-alignas(64) T a[64];
+alignas(64) T a[1<<20];
 
 template<typename T>
-alignas(64) T b[64];
+alignas(64) T b[1<<20];
 
 
 template<u2 n>
@@ -16,7 +16,7 @@ ALWAYS_INLINE void jmod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> tmp,VU32x8&vmod)
 	a=a-tmp;
 }
 
-template<u2 n>
+template<u2 n,bool j_mod=true>
 ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t,VU32x8& vmod,VU32x8& vmodp)
 {
 	using w64=VU64x4;
@@ -36,20 +36,20 @@ ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU
 	t=blend(t,b,cint<0b1010'1010>);
 	
 	bp=b*vmodp; //t1
-	
-	t=t+vmod;
-
 	ap=a*vmod;
+
+	t=t+vmod;
 	bp=b*vmod;
 	
 	ap=ap>>cint<32>;
 	a=blend(a,b,cint<0b1010'1010>);
 	a=t-a;
 
-	jmod<n>(a,t,vmod);
+	if constexpr(j_mod)
+		jmod<n>(a,t,vmod);
 }
 
-template<u2 n>
+template<u2 n,bool j_mod=true>
 ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,VU32x8& vmod,VU32x8& vmodp)
 {
 	using w64=VU64x4;
@@ -79,8 +79,12 @@ ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<
 	a=blend(a,b,cint<0b1010'1010>);
 	a=t0-a;
 
-	jmod<n>(a,t0,vmod);
+	if constexpr(j_mod)
+		jmod<n>(a,t0,vmod);
 }
+
+// template<u2 n>
+// to_mogo()
 
 void mul_mod_s(u2 a,u2 b,u2 mod,u2 modp)
 {
@@ -95,13 +99,13 @@ void mul_mod_s(u2 a,u2 b,u2 mod,u2 modp)
 
 ALWAYS_INLINE void Transpose(Pack_Ref<VI32x8,8> mat,Pack_Ref<VI32x8,8> tmp)
 {
-	tmp(0,1,2,3)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0010'0000>);
-	tmp(4,5,6,7)=permute2x(mat(0,1,2,3),mat(4,5,6,7),cint<0b0011'0001>);
-	mat(0,1,4,5).as<VI64x4>()=unpacklo(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
-	mat(2,3,6,7).as<VI64x4>()=unpackhi(tmp(0,1,4,5).as<VI64x4>(),tmp(2,3,6,7).as<VI64x4>());
+	tmp[0,1,2,3]=permute2x(mat[0,1,2,3],mat[4,5,6,7],cint<0b0010'0000>);
+	tmp[4,5,6,7]=permute2x(mat[0,1,2,3],mat[4,5,6,7],cint<0b0011'0001>);
+	mat[0,1,4,5].as<VI64x4>()=unpacklo(tmp[0,1,4,5].as<VI64x4>(),tmp[2,3,6,7].as<VI64x4>());
+	mat[2,3,6,7].as<VI64x4>()=unpackhi(tmp[0,1,4,5].as<VI64x4>(),tmp[2,3,6,7].as<VI64x4>());
 	tmp=shuffle(mat,cint<0b1101'1000>);
-	mat(0,2,4,6)=unpacklo(tmp(0,2,4,6),tmp(1,3,5,7));
-	mat(1,3,5,7)=unpackhi(tmp(0,2,4,6),tmp(1,3,5,7));
+	mat[0,2,4,6]=unpacklo(tmp[0,2,4,6],tmp[1,3,5,7]);
+	mat[1,3,5,7]=unpackhi(tmp[0,2,4,6],tmp[1,3,5,7]);
 }
 
 s3 exgcd(s3 a,s3 b,s3&x,s3&y)
@@ -117,8 +121,11 @@ s3 exgcd(s3 a,s3 b,s3&x,s3&y)
     return r;
 }
 
+
+
 void test_transpose()
 {
+
 	for(int i=0;i<64;i++)
 		a<s2>[i]=rand();
 	Pack<VI32x8,8> mat(a<int>),tmp;
@@ -127,6 +134,34 @@ void test_transpose()
 	Transpose(mat,tmp);
 	for(int i=0;i<8;i++)
 		mat[i].print(std::format("mat[{}]",i));
+}
+
+void arr_mul_mod1(u2*a,u2*b,u2 size,u2 mod,u2 modp)
+{
+	Pack<VU32x8,3> pa,pb,t0,t1;
+	VU32x8 vmod=set1(mod);
+	VU32x8 vmodp=set1(modp);
+	for(int i=0;i<size;i+=24)
+	{
+		pa.load(a+i);
+		pb.load(b+i);
+		mul_mod_4<3>(pa,pb,t0,t1,vmod,vmodp);
+		pa.store(a+i);
+	}
+}
+
+void arr_mul_mod2(u2*a,u2*b,u2 size,u2 mod,u2 modp)
+{
+	Pack<VU32x8,4> pa,pb,t;
+	VU32x8 vmod=set1(mod);
+	VU32x8 vmodp=set1(modp);
+	for(int i=0;i<size;i+=32)
+	{
+		pa.load(a+i);
+		pb.load(b+i);
+		mul_mod<4>(pa,pb,t,vmod,vmodp);
+		pa.store(a+i);
+	}
 }
 
 void test_mul_mod()
@@ -161,11 +196,51 @@ void test_mul_mod()
 		x[i].print(std::format("x[{}]",i));
 }
 
+void test_mul_mod_speed1()
+{
+	static constexpr u2 mod=998244353;
+	s3 ri,np;
+	s3 r=1ull<<32;
+	exgcd(r,mod,ri,np);
+	const u2 modp=(np%r+r)%r;
+
+	int start=clock();
+
+	for(int i=0;i<1600000;i++)
+	{
+		arr_mul_mod1(a<u2>,b<u2>,1<<11,mod,modp);
+	}
+	int end=clock();
+
+	printf("%d\n",end-start);
+
+}
+
+void test_mul_mod_speed2()
+{
+	static constexpr u2 mod=998244353;
+	s3 ri,np;
+	s3 r=1ull<<32;
+	exgcd(r,mod,ri,np);
+	const u2 modp=(np%r+r)%r;
+
+	int start=clock();
+
+	for(int i=0;i<1600000;i++)
+	{
+		arr_mul_mod2(a<u2>,b<u2>,1<<11,mod,modp);
+	}
+	int end=clock();
+
+	printf("%d\n",end-start);
+
+}
+
 int main() try
 {
-	test_mul_mod();
-
-	
+	//test_mul_mod();
+	test_mul_mod_speed1();
+	test_mul_mod_speed2();
 }
 catch(std::exception&e)
 {
