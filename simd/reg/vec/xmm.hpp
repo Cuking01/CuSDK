@@ -10,7 +10,7 @@ struct XMM:Vec_Reg_Base
 		__m128h h;
 	};
 
-	template<XMM_T T,XMM_T B>
+	template<XMM_T T,typename B> requires (XMM_T<std::remove_const_t<B>>)
 	ALWAYS_INLINE decltype(auto) as(this B&self)
 	{
 		return (const_with_t<T,B>&)(const_with_t<XMM,B>&)self;

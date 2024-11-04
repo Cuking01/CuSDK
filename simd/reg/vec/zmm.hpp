@@ -10,7 +10,7 @@ struct ZMM:Vec_Reg_Base
 		__m512h h;
 	};
 
-	template<ZMM_T T,ZMM_T B>
+	template<ZMM_T T,typename B> requires (ZMM_T<std::remove_const_t<B>>)
 	ALWAYS_INLINE decltype(auto) as(this B&self)
 	{
 		return (const_with_t<T,B>&)(const_with_t<ZMM,B>&)self;

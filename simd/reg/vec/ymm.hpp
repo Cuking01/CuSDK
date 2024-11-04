@@ -10,7 +10,7 @@ struct YMM:Vec_Reg_Base
 		__m256h h;
 	};
 
-	template<YMM_T T,YMM_T B>
+	template<YMM_T T,typename B> requires (YMM_T<std::remove_const_t<B>>)
 	ALWAYS_INLINE decltype(auto) as(this B&self)
 	{
 		return (const_with_t<T,B>&)(const_with_t<YMM,B>&)self;

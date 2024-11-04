@@ -9,7 +9,7 @@ alignas(64) T b[1<<20];
 
 
 template<u2 n>
-ALWAYS_INLINE void jmod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> tmp,VU32x8&vmod)
+ALWAYS_INLINE void jmod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> tmp,const VU32x8&vmod)
 {
 	tmp=a.template as<VI32x8>() > vmod.template as<VI32x8>();
 	tmp=tmp&vmod;
@@ -50,7 +50,7 @@ ALWAYS_INLINE void mul_mod(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU
 }
 
 template<u2 n,bool j_mod=true>
-ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,VU32x8& vmod,VU32x8& vmodp)
+ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,const VU32x8& vmod,const VU32x8& vmodp)
 {
 	using w64=VU64x4;
 	auto ap=a.template as<w64>();
@@ -83,8 +83,50 @@ ALWAYS_INLINE void mul_mod_4(Pack_Ref<VU32x8,n> a,Pack_Ref<VU32x8,n> b,Pack_Ref<
 		jmod<n>(a,t0,vmod);
 }
 
-// template<u2 n>
-// to_mogo()
+template<u2 n>
+ALWAYS_INLINE void to_mogo(Pack_Ref<VU32x8,n> x,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,const VU32x8&vyi,const VU32x8&vmod)
+{
+	using w64=VU64x4;
+
+	auto xp=x.template as<w64>();
+	auto tp0=t0.template as<w64>();
+	auto tp1=t1.template as<w64>();
+
+	x=x<<cint<2>;
+	tp1=xp>>cint<32>;
+	tp0=x*vyi;
+	tp1=t1*vyi;
+	tp0=tp0>>cint<32>;
+	t1=t1+x;
+	t0=t0+x;
+	tp1=tp1>>cint<32>;
+	tp0=t0*vmod;
+	tp1=t1*vmod;
+	tp1=tp1<<cint<32>;
+	x=blend(t0,t1,cint<0xaa>);
+	t0[0]=t0[0]^t0[0];
+	x=t0[0]-x;
+}
+
+template<u2 n>
+ALWAYS_INLINE void mogo_to(Pack_Ref<VU32x8,n> x,Pack_Ref<VU32x8,n> t0,Pack_Ref<VU32x8,n> t1,VU32x8&vmod,VU32x8&vmodp)
+{
+	using w64=VU64x4;
+
+	auto xp=x.template as<w64>();
+	auto tp0=t0.template as<w64>();
+	auto tp1=t1.template as<w64>();
+
+	tp0=x*vmodp;
+	xp=xp>>cint<32>;
+	tp1=x*vmodp;
+	tp0=t0*vmod;
+	tp1=t1*vmod;
+	tp0=tp0>>cint<32>;
+	x=blend(t0,t1,cint<0xaa>);
+	x=vmod-x;
+	jmod<n>(x,t0,vmod);
+}
 
 void mul_mod_s(u2 a,u2 b,u2 mod,u2 modp)
 {
@@ -121,7 +163,39 @@ s3 exgcd(s3 a,s3 b,s3&x,s3&y)
     return r;
 }
 
+u2 pow(u2 a,u2 b)
+{
+	u2 ans=1;
+	while(b)
+	{
+		if(b&1)ans=(u3)ans*a;
+		a=(u3)a*a;
+		b>>=1;
+	}
+	return ans;
+}
 
+void test_to_mogo()
+{
+	static constexpr u2 mod=998244353;
+	static constexpr u2 yi=((1ull<<62)+mod-1)/mod-(1ull<<32);
+	for(int i=0;i<32;i++)
+		a<u2>[i]=i;
+
+	Pack<VU32x8,4> x(a<u2>),t0,t1;
+	VU32x8 vyi=set1(yi);
+	VU32x8 vmod=set1(mod);
+	to_mogo<4>(x,t0,t1,vyi,vmod);
+
+	for(int i=0;i<4;i++)
+		x[i].print(std::format("x[{}]",i));
+
+	VU32x8 vmodp=set1(pow(mod,(1u<<31)-1));
+	mogo_to<4>(x,t0,t1,vmod,vmodp);
+
+	for(int i=0;i<4;i++)
+		x[i].print(std::format("x[{}]",i));
+}
 
 void test_transpose()
 {
@@ -239,8 +313,9 @@ void test_mul_mod_speed2()
 int main() try
 {
 	//test_mul_mod();
-	test_mul_mod_speed1();
-	test_mul_mod_speed2();
+	//test_mul_mod_speed1();
+	//test_mul_mod_speed2();
+	test_to_mogo();
 }
 catch(std::exception&e)
 {
