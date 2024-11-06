@@ -47,6 +47,55 @@ struct Pack_Ref
 	ALWAYS_INLINE Pack_Ref(Pack<Reg,n>&pack):Pack_Ref(pack,std::make_index_sequence<n>())
 	{}
 
+private:
+	//多个类似寄存器的东西合并成一个的辅助类，用于标记实现此功能的构造函数们，暂且称为合并构造
+	struct Merge_Impl_Flag{};
+	static constexpr Merge_Impl_Flag merge_impl_flag{};
+
+	//合并构造的递归终点，寄存器都排列好了，直接展开
+	template<typename... Regs,int>
+	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs):ref{regs...} {}
+
+	//展开第i个寄存器类似物，此重载是Pack或者Pack_Ref的情况
+	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes,std::size_t...ids>
+		requires (!Reg_T<std::remove_reference_t<Reg_Like0>>)
+	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes,std::index_sequence<ids...>):
+		Pack_Ref<Regs...,decltype((ids,std::declval<Reg>()))...,0,Reg_Likes...>
+		(
+			merge_impl_flag,
+			regs...,
+			reg_like0[ids]...,
+			std::forward<Reg_Likes>(reg_likes)...
+		)
+	{}
+
+	//展开第i个寄存器类似物，此重载是Reg的情况
+	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes,std::size_t...ids>
+		requires (Reg_T<std::remove_reference_t<Reg_Like0>>)
+	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes,std::index_sequence<ids...>):
+		Pack_Ref<Regs...,Reg,0,Reg_Likes...>(merge_impl_flag,regs...,reg_like0,std::forward<Reg_Likes>(reg_likes)...)
+	{}
+
+	//递归展开所有寄存器类似物
+	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes>
+	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes):
+		Pack_Ref<Regs...,0,Reg_Like0,Reg_Likes...>
+		(
+			merge_impl_flag,
+			regs...,
+			std::forward<Reg_Like0>(reg_like0),
+			std::forward<Reg_Likes>(reg_likes)...,
+			std::make_index_sequence<get_reg_num<Reg_Like0>>()
+		)
+	{}
+public:
+	//合并构造的接口
+	template<Reg_Lvalue_Like_T... Reg_Likes> 
+		requires (std::is_same_v<Reg,get_reg<std::remove_cvref_t<Reg_Likes>>>&&...) //所有参数对应的寄存器相同，且等于本类的存储类型
+	ALWAYS_INLINE Pack_Ref(Reg_Likes&&...reg_likes):
+		Pack_Ref<0,Reg_Likes...>(merge_impl_flag,std::forward<Reg_Likes>(reg_likes)...)
+	{}
+
 	template<std::size_t... ids>
 	ALWAYS_INLINE Pack_Ref(Reg&reg,std::index_sequence<ids...>)
 		:ref{(ids,reg)...}

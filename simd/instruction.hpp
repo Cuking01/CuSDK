@@ -184,19 +184,18 @@ template<typename... T>
 using IFMT=Instruction_FMT<typename Make_Fmt_Helper<T>::type...>;
 
 template<Reg_Like_T T>
-struct get_reg_impl
+struct Reg_Trait
 {
 	using type=T;
+	static constexpr u2 size=1;
 };
 
 template<typename T> requires (Reg_Pack_T<T>||Pack_Ref_T<T>)
-struct get_reg_impl<T>
+struct Reg_Trait<T>
 {
 	using type=typename T::Reg_Type;
+	static constexpr u2 size=T::size;
 };
-
-template<Reg_Like_T T>
-using get_reg=typename get_reg_impl<T>::type;
 
 template<typename A,typename B>
 concept reg_same=std::same_as<get_reg<A>,get_reg<B>>;

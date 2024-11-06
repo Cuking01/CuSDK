@@ -25,3 +25,10 @@ constexpr bool is_reg_pack_cref_v<Pack_CRef<Reg,n>> =true;
 
 template<typename T>
 concept Pack_CRef_T=is_reg_pack_cref_v<T>||Pack_Ref_T<T>;
+
+template<typename T>
+concept Reg_Lvalue_Like_T=Reg_Lvalue_Ref_T<T>||Reg_Pack_Lvalue_Ref_T<T>||Pack_Ref_T<std::remove_cvref_t<T>>;
+
+// template<typename T>
+// concept Reg_Rvalue_Like_T=Reg_T<T>||Reg_Pack_T<T>||Pack_CRef_T<T>;
+

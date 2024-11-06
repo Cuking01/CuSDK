@@ -13,3 +13,8 @@ struct Reg_Base;
 template<typename T>
 concept Reg_T=std::derived_from<T,Reg_Base>&&Non_CV_T<T>;
 
+template<typename T>
+concept Reg_Lvalue_Ref_T=std::is_lvalue_reference_v<T>&&Reg_T<std::remove_reference_t<T>>;
+
+
+

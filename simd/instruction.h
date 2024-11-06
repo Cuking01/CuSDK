@@ -79,3 +79,11 @@ struct FMT_Scale;
 template<typename T>
 concept Instruction_FMT_Indicator=std::same_as<T,FMT_Imm>||Instance_Of<FMT_Reg,T>||Instance_Of<FMT_Scale,T>;
 
+template<Reg_Like_T T>
+struct Reg_Trait;
+
+template<Reg_Like_T T>
+using get_reg=typename Reg_Trait<T>::type;
+
+template<Reg_Like_T T>
+static constexpr u2 get_reg_num=Reg_Trait<T>::size;
