@@ -15,17 +15,17 @@ struct Predicate
 template<typename T>
 struct is:Predicate<T>
 {
-	constexpr bool one_of(auto&&... args) const noexcept(noexcept(((Predicate<T>::value()==args)||...)))
+	constexpr bool one_of(const auto&... args) const noexcept(noexcept(((Predicate<T>::value()==args)||...)))
 	{
 		return ((Predicate<T>::value()==args)||...);
 	}
 
-	constexpr bool none_of(auto&&... args) const noexcept(noexcept(!((Predicate<T>::value()==args)||...)))
+	constexpr bool none_of(const auto&... args) const noexcept(noexcept(!((Predicate<T>::value()==args)||...)))
 	{
 		return !((Predicate<T>::value()==args)||...);
 	}
 
-	constexpr bool in(auto&&l,auto&&r) const noexcept(noexcept(l<=Predicate<T>::value()&&Predicate<T>::value()<=r))
+	constexpr bool in(const auto&l,const auto&r) const noexcept(noexcept(l<=Predicate<T>::value()&&Predicate<T>::value()<=r))
 	{
 		return l<=Predicate<T>::value()&&Predicate<T>::value()<=r;
 	}
