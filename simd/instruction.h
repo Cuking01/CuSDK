@@ -87,3 +87,7 @@ using get_reg=typename Reg_Trait<T>::type;
 
 template<Reg_Like_T T>
 static constexpr u2 get_reg_num=Reg_Trait<T>::size;
+
+template<typename A,typename B>
+concept reg_same=std::same_as<get_reg<A>,get_reg<B>>;
+

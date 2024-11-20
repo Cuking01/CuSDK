@@ -312,6 +312,22 @@ void test_mul_mod_speed2()
 
 int main() try
 {
+	Pack<VU32x8,4> a;
+	const Pack_Ref<VU32x8,2> pr1=a[0,1];
+	VU32x8 b,c;
+
+	Pack_Ref pr2(pr1,b,a,c);
+
+	a=set1(1u);
+	b=set1(2u);
+	c=set1(3u);
+	for(int i=0;i<8;i++)
+		pr2[i].print();
+
+	Pack_CRef pr3(pr1,b,std::as_const(a),c);
+
+	for(int i=0;i<8;i++)
+		pr3[i].print();
 	//test_mul_mod();
 	//test_mul_mod_speed1();
 	//test_mul_mod_speed2();

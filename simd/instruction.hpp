@@ -197,5 +197,3 @@ struct Reg_Trait<T>
 	static constexpr u2 size=T::size;
 };
 
-template<typename A,typename B>
-concept reg_same=std::same_as<get_reg<A>,get_reg<B>>;

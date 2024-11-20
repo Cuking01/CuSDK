@@ -1,36 +1,79 @@
 #pragma once
 
-template<u2 mask,std::size_t n,std::size_t...ids>
-struct Make_Mask_Index_Sequence_Helper
+namespace Pack_Ref_Detail
 {
-	using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,ids...>::type;
-};
 
-template<u2 mask,std::size_t n,std::size_t...ids> requires (n>0&&(n-1&~mask)==0)
-struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
-{
-	using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,n-1,ids...>::type;
-};
+	template<u2 mask,std::size_t n,std::size_t...ids>
+	struct Make_Mask_Index_Sequence_Helper
+	{
+		using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,ids...>::type;
+	};
 
-template<u2 mask,std::size_t n,std::size_t...ids> requires (n==0)
-struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
-{
-	using type=std::index_sequence<ids...>;
-};
+	template<u2 mask,std::size_t n,std::size_t...ids> requires (n>0&&(n-1&~mask)==0)
+	struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
+	{
+		using type=typename Make_Mask_Index_Sequence_Helper<mask,n-1,n-1,ids...>::type;
+	};
 
-template<u2 mask,std::size_t n>
-constexpr auto make_mask_index_sequence()
-{
-	return typename Make_Mask_Index_Sequence_Helper<mask,n>::type{};
-}
+	template<u2 mask,std::size_t n,std::size_t...ids> requires (n==0)
+	struct Make_Mask_Index_Sequence_Helper<mask,n,ids...>
+	{
+		using type=std::index_sequence<ids...>;
+	};
 
-template<Reg_T Reg,u2 n> requires (n>0)
-struct Pack_Ref
-{
+	template<u2 mask,std::size_t n>
+	constexpr auto make_mask_index_sequence()
+	{
+		return typename Make_Mask_Index_Sequence_Helper<mask,n>::type{};
+	}
+
+	template<Reg_T Reg>
 	struct Ref
 	{
 		Reg& ref;
 	};
+
+	template<Reg_T Reg>
+	struct CRef
+	{
+		const Reg&ref;
+	};
+
+	struct Merge_Flag{};
+
+	static constexpr Merge_Flag merge_flag{};
+
+	template<u2 idx,typename Reg_Like0,typename... Reg_Likes>
+	ALWAYS_INLINE decltype(auto) extract_ith_reg(Reg_Like0&&reg0,Reg_Likes&&...regs)
+	{
+		static constexpr u2 sz=get_reg_num<std::remove_cvref_t<Reg_Like0>>;
+		if constexpr(idx<sz)
+			return reg0[idx];
+		else
+			return extract_ith_reg<idx-sz,Reg_Likes...>(std::forward<Reg_Likes>(regs)...);
+	}
+
+	template<typename Reg_Like0,typename... Reg_Likes>
+	constexpr bool all_reg_same=(reg_same<std::remove_cvref_t<Reg_Like0>,std::remove_cvref_t<Reg_Likes>>&&...);
+
+	template<typename Reg_Like0,typename... Reg_Likes>
+	struct common_reg_type_impl
+	{
+		using type=get_reg<std::remove_cvref_t<Reg_Like0>>;
+	};
+
+	template<typename... Reg_Likes>
+	using common_reg_type=typename common_reg_type_impl<Reg_Likes...>::type;
+
+	template<typename... Reg_Likes>
+	constexpr u2 all_size_sum=(get_reg_num<std::remove_cvref_t<Reg_Likes>>+...+0);
+}; //namespace Pack_Ref_Detail
+
+
+template<Reg_T Reg,u2 n> requires (n>0)
+struct Pack_Ref
+{
+	using Ref=Pack_Ref_Detail::Ref<Reg>;
 
 	Ref ref[n];
 
@@ -39,61 +82,22 @@ struct Pack_Ref
 	using ele_type=Reg::ele_type;
 	static constexpr u2 ele_num=Reg::ele_num;
 
-	template<std::size_t... ids>
-	ALWAYS_INLINE Pack_Ref(Pack<Reg,n>&pack,std::index_sequence<ids...>)
-		:ref{pack[ids]...}
+	template<std::size_t...ids>
+	ALWAYS_INLINE Pack_Ref(Pack_Ref_Detail::Merge_Flag,auto regs,std::index_sequence<ids...>):
+		ref{regs.template operator()<ids>()...}
 	{}
 
-	ALWAYS_INLINE Pack_Ref(Pack<Reg,n>&pack):Pack_Ref(pack,std::make_index_sequence<n>())
-	{}
-
-private:
-	//多个类似寄存器的东西合并成一个的辅助类，用于标记实现此功能的构造函数们，暂且称为合并构造
-	struct Merge_Impl_Flag{};
-	static constexpr Merge_Impl_Flag merge_impl_flag{};
-
-	//合并构造的递归终点，寄存器都排列好了，直接展开
-	template<typename... Regs,int>
-	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs):ref{regs...} {}
-
-	//展开第i个寄存器类似物，此重载是Pack或者Pack_Ref的情况
-	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes,std::size_t...ids>
-		requires (!Reg_T<std::remove_reference_t<Reg_Like0>>)
-	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes,std::index_sequence<ids...>):
-		Pack_Ref<Regs...,decltype((ids,std::declval<Reg>()))...,0,Reg_Likes...>
-		(
-			merge_impl_flag,
-			regs...,
-			reg_like0[ids]...,
-			std::forward<Reg_Likes>(reg_likes)...
-		)
-	{}
-
-	//展开第i个寄存器类似物，此重载是Reg的情况
-	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes,std::size_t...ids>
-		requires (Reg_T<std::remove_reference_t<Reg_Like0>>)
-	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes,std::index_sequence<ids...>):
-		Pack_Ref<Regs...,Reg,0,Reg_Likes...>(merge_impl_flag,regs...,reg_like0,std::forward<Reg_Likes>(reg_likes)...)
-	{}
-
-	//递归展开所有寄存器类似物
-	template<typename... Regs,int,typename Reg_Like0,typename... Reg_Likes>
-	ALWAYS_INLINE Pack_Ref(Merge_Impl_Flag,Regs&...regs,Reg_Like0&&reg_like0,Reg_Likes&&...reg_likes):
-		Pack_Ref<Regs...,0,Reg_Like0,Reg_Likes...>
-		(
-			merge_impl_flag,
-			regs...,
-			std::forward<Reg_Like0>(reg_like0),
-			std::forward<Reg_Likes>(reg_likes)...,
-			std::make_index_sequence<get_reg_num<Reg_Like0>>()
-		)
-	{}
-public:
 	//合并构造的接口
 	template<Reg_Lvalue_Like_T... Reg_Likes> 
 		requires (std::is_same_v<Reg,get_reg<std::remove_cvref_t<Reg_Likes>>>&&...) //所有参数对应的寄存器相同，且等于本类的存储类型
 	ALWAYS_INLINE Pack_Ref(Reg_Likes&&...reg_likes):
-		Pack_Ref<0,Reg_Likes...>(merge_impl_flag,std::forward<Reg_Likes>(reg_likes)...)
+		Pack_Ref(Pack_Ref_Detail::merge_flag,
+			[&reg_likes...]<u2 idx>()->decltype(auto)
+			{
+				return Pack_Ref_Detail::extract_ith_reg<idx,Reg_Likes...>(std::forward<Reg_Likes>(reg_likes)...);
+			},
+			std::make_index_sequence<n>()
+		)
 	{}
 
 	template<std::size_t... ids>
@@ -104,8 +108,8 @@ public:
 	ALWAYS_INLINE Pack_Ref(Reg&reg):Pack_Ref(reg,std::make_index_sequence<n>())
 	{}
 
-	template<std::same_as<Reg>... Args> requires (sizeof...(Args)==n)
-	ALWAYS_INLINE Pack_Ref(Args&...args):ref{args...} {}
+	// template<std::same_as<Reg>... Args> requires (sizeof...(Args)==n)
+	// ALWAYS_INLINE Pack_Ref(Args&...args):ref{args...} {}
 
 	ALWAYS_INLINE Reg& operator[](u2 idx) const {return ref[idx].ref;} 
 
@@ -150,12 +154,6 @@ public:
 	{
 		return Pack_Ref<Reg,sizeof...(Args)>(ref[args].ref...);
 	}
-
-	template<u2 msk>
-	ALWAYS_INLINE auto mask() const
-	{
-		return mask_impl(make_mask_index_sequence<msk,n>());
-	}
 	
 private:
 
@@ -185,14 +183,10 @@ private:
 	}
 };
 
-
 template<Reg_T Reg,u2 n> requires (n>0)
 struct Pack_CRef
 {
-	struct Ref
-	{
-		const Reg& ref;
-	};
+	using Ref=Pack_Ref_Detail::CRef<Reg>;
 
 	Ref ref[n];
 
@@ -201,19 +195,22 @@ struct Pack_CRef
 	using ele_type=Reg::ele_type;
 	static constexpr u2 ele_num=Reg::ele_num;
 
-	template<std::size_t... ids>
-	ALWAYS_INLINE Pack_CRef(const Pack_Ref<Reg,n>&pref,std::index_sequence<ids...>)
-		:ref{pref[ids]...}
+	template<std::size_t...ids>
+	ALWAYS_INLINE Pack_CRef(Pack_Ref_Detail::Merge_Flag,auto regs,std::index_sequence<ids...>):
+		ref{regs.template operator()<ids>()...}
 	{}
 
-	ALWAYS_INLINE Pack_CRef(Pack_Ref<Reg,n> pref):Pack_CRef(pref,std::make_index_sequence<n>()){}
-
-	template<std::size_t... ids>
-	ALWAYS_INLINE Pack_CRef(const Pack<Reg,n>&pack,std::index_sequence<ids...>)
-		:ref{pack[ids]...}
-	{}
-
-	ALWAYS_INLINE Pack_CRef(const Pack<Reg,n>&pack):Pack_CRef(pack,std::make_index_sequence<n>())
+	//合并构造的接口 
+	template<Reg_CLvalue_Like_T... Reg_Likes> 
+		requires (std::is_same_v<Reg,get_reg<std::remove_cvref_t<Reg_Likes>>>&&...) //所有参数对应的寄存器相同，且等于本类的存储类型
+	ALWAYS_INLINE Pack_CRef(Reg_Likes&&...reg_likes):
+		Pack_CRef(Pack_Ref_Detail::merge_flag,
+			[&reg_likes...]<u2 idx>()->decltype(auto)
+			{
+				return Pack_Ref_Detail::extract_ith_reg<idx,Reg_Likes...>(std::forward<Reg_Likes>(reg_likes)...);
+			},
+			std::make_index_sequence<n>()
+		)
 	{}
 
 	template<std::size_t... ids>
@@ -223,9 +220,6 @@ struct Pack_CRef
 
 	ALWAYS_INLINE Pack_CRef(const Reg&reg):Pack_CRef(reg,std::make_index_sequence<n>())
 	{}
-
-	template<std::same_as<Reg>... Args> requires (sizeof...(Args)==n)
-	ALWAYS_INLINE Pack_CRef(const Args&...args):ref{args...} {}
 
 	ALWAYS_INLINE const Reg& operator[](u2 idx) const {return ref[idx].ref;}
 
@@ -256,12 +250,6 @@ struct Pack_CRef
 		return Pack_CRef<Reg,sizeof...(Args)>(ref[args].ref...);
 	}
 
-	template<u2 msk>
-	ALWAYS_INLINE auto mask() const
-	{
-		return mask_impl(make_mask_index_sequence<msk,n>());
-	}
-
 private:
 	template<auto opt,typename... Ele_Ts,std::size_t... ids>
 	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
@@ -288,3 +276,11 @@ private:
 		return Pack_CRef<Reg,sizeof...(ids)>(ref[ids].ref...);
 	}
 };
+
+
+template<Reg_Lvalue_Like_T... Reg_Likes> requires (sizeof...(Reg_Likes)>0&&Pack_Ref_Detail::all_reg_same<Reg_Likes...>)
+Pack_Ref(Reg_Likes&&...)->Pack_Ref<Pack_Ref_Detail::common_reg_type<Reg_Likes...>,Pack_Ref_Detail::all_size_sum<Reg_Likes...>>;
+
+template<Reg_CLvalue_Like_T... Reg_Likes> requires (sizeof...(Reg_Likes)>0&&Pack_Ref_Detail::all_reg_same<Reg_Likes...>)
+Pack_CRef(Reg_Likes&&...)->Pack_CRef<Pack_Ref_Detail::common_reg_type<Reg_Likes...>,Pack_Ref_Detail::all_size_sum<Reg_Likes...>>;
+
