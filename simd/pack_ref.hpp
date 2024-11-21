@@ -131,14 +131,26 @@ struct Pack_Ref
 		ler.eval(*this);
 	}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
-	SIMD_OPT void load(const Args*...p) {ls_opt<&Reg_Type::load>(p...);}
+	template<Reg_CLvalue_Like_T RHS,std::size_t... ids>
+	void mov_impl(RHS&& rhs,std::index_sequence<ids...>)
+	{
+		((ref[ids].ref=rhs[ids]),...);
+	}
+
+	template<Reg_CLvalue_Like_T RHS> requires ((Reg_T<std::remove_cvref_t<RHS>>||get_reg_num<std::remove_cvref_t<RHS>> >=n)&&reg_same<Reg,std::remove_cvref_t<RHS>>)
+	void operator=(RHS&& rhs)
+	{
+		mov_impl(std::forward<RHS>(rhs),std::make_index_sequence<n>());
+	}
 
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
-	SIMD_OPT void loadu(const Args*...p) {ls_opt<&Reg_Type::loadu>(p...);}
+	SIMD_OPT void load(const Args*...p) const {ls_opt<&Reg_Type::load>(p...);}
 
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
-	SIMD_OPT void stream_load(const Args*...p) {ls_opt<&Reg_Type::stream_load>(p...);}
+	SIMD_OPT void loadu(const Args*...p) const {ls_opt<&Reg_Type::loadu>(p...);}
+
+	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	SIMD_OPT void stream_load(const Args*...p) const {ls_opt<&Reg_Type::stream_load>(p...);}
 
 	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
@@ -158,19 +170,19 @@ struct Pack_Ref
 private:
 
 	template<auto opt,typename... Ele_Ts,std::size_t... ids>
-	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p)
+	SIMD_OPT void ls_impl(std::index_sequence<ids...>,Ele_Ts*...p) const 
 	{
 		(((ref[ids].ref.*opt)(p)),...);
 	}
 
 	template<auto opt,std::size_t... ids>
-	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	SIMD_OPT void ls_helper(auto*p,std::index_sequence<ids...>isq) const 
 	{
 		ls_impl<opt>(isq,p+ids*ele_num...);
 	}
 
 	template<auto opt,typename... Ele_Ts>
-	SIMD_OPT void ls_opt(Ele_Ts*...p)
+	SIMD_OPT void ls_opt(Ele_Ts*...p) const 
 	{
 		if constexpr(sizeof...(Ele_Ts)==1)ls_helper<opt>(p...,std::make_index_sequence<n>());
 		else ls_impl<opt>(std::make_index_sequence<n>(),p...);
@@ -258,7 +270,7 @@ private:
 	}
 
 	template<auto opt,std::size_t... ids>
-	SIMD_OPT void ls_helper(const ele_type*p,std::index_sequence<ids...>isq)
+	SIMD_OPT void ls_helper(ele_type*p,std::index_sequence<ids...>isq)
 	{
 		ls_impl<opt>(isq,p+ids*ele_num...);
 	}
