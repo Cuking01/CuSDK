@@ -176,9 +176,18 @@ VI32x8 v1,v2,v3;
 Pack_Ref<VI32x8,4> pr(v1,v2,v3,v1);
 ```
 
-`Pack_Ref` 本身的 `const` 限定**不影响**其引用的寄存器，如果想使用常引用，可以使用 `Pack_CRef` ，但此基本内部使用居多，使用本库时一般用不到。
+`Pack_Ref` 本身的 `const` 限定**不影响**其引用的寄存器，如果想使用常引用，可以使用 `Pack_CRef` 。
 
-后续打算更新一个用多个 `Pack` 或者 `Pack_Ref` 拼成一个 `Pack_Ref` 的写法，暂时还没实现。 
+`Pack_Ref` 有一个特殊的构造函数，被我称为合并构造：
+
+```cpp
+Pack<VU32x8,4> a;
+Pack_Ref pr=a[0,1];    //pr是个Pack_Ref<VU32x8,2>
+VU32x8 b,c;
+Pack_Ref pr2(b,pr,c,a);  //pr2是个Pack_Ref<VU32x8,8>，其中pr2[0]是b，pr2[1,2]是a[0,1]，pr[3]是c，pr[4,5,6,7]是a[0,1,2,3]，其中a[0,1]被引用两次
+```
+
+
 
 ### cint与cints
 
