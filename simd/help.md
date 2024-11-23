@@ -153,6 +153,10 @@ Pack<VF32x8,8> pc(addr3);
 
 pc=fmadd(pa[0,1,2,3,0,1,2,3],pb[0,1,0,1,0,1,0,1],pc);  //相当于pc[i*2+j]+=pa[i]*pb[j]，其中i从0到3，j从0到1
 
+//也可以利用后文提到的Pack_Ref的合并构造，写成pc=fmadd(Pack_Ref(pa,pa),Pack_Ref(pb,pb,pb,pb));
+pc=fmadd(Pack_Ref(pa,pa),Pack_Ref(pb,pb,pb,pb));
+
+
 pc.store(addr3);
 ```
 
