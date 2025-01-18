@@ -16,6 +16,7 @@
 #include<set>
 #include<string>
 #include<typeinfo>
+#include<memory>
 #include<utility>
 #include<vector>
 
