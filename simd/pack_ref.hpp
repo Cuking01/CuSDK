@@ -126,19 +126,19 @@ struct Pack_Ref
 	}
 
 	template<Lazy_Eval_Record_T LER>
-	void operator=(LER ler)
+	ALWAYS_INLINE void operator=(LER ler)
 	{
 		ler.eval(*this);
 	}
 
 	template<Reg_CLvalue_Like_T RHS,std::size_t... ids>
-	void mov_impl(RHS&& rhs,std::index_sequence<ids...>)
+	ALWAYS_INLINE void mov_impl(RHS&& rhs,std::index_sequence<ids...>)
 	{
 		((ref[ids].ref=rhs[ids]),...);
 	}
 
 	template<Reg_CLvalue_Like_T RHS> requires ((Reg_T<std::remove_cvref_t<RHS>>||get_reg_num<std::remove_cvref_t<RHS>> >=n)&&reg_same<Reg,std::remove_cvref_t<RHS>>)
-	void operator=(RHS&& rhs)
+	ALWAYS_INLINE void operator=(RHS&& rhs)
 	{
 		mov_impl(std::forward<RHS>(rhs),std::make_index_sequence<n>());
 	}
