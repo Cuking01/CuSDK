@@ -15,6 +15,8 @@
 #include "simd/cint.h"
 #include "simd/scale.h"
 #include "simd/scale_pack_ref.h"
+#include "simd/address.h"
+#include "simd/addr_pack_ref.h"
 #include "simd/instruction.h"
 
 
@@ -24,6 +26,8 @@
 #include "simd/cint.hpp"
 #include "simd/scale.hpp"
 #include "simd/scale_pack_ref.hpp"
+#include "simd/address.hpp"
+#include "simd/addr_pack_ref.hpp"
 #include "simd/instruction.hpp"
 
 #include "simd/instruction.cpp"

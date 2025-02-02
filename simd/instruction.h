@@ -16,6 +16,9 @@ template<typename T>
 concept Scale_Like_T=Scale_T<T>||Scale_Pack_T<T>;
 
 template<typename T>
+concept Addr_Like_T=Addr_T<T>||Addr_Pack_T<T>;
+
+template<typename T>
 concept Lazy_Eval_Arg_T=Reg_Like_T<T>||Imm_T<T>||Scale_Like_T<T>;
 
 template<typename T>

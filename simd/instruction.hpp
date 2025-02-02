@@ -31,6 +31,12 @@ struct Lazy_Eval_Record
 		eval_helper(pack_r,std::make_index_sequence<n>());
 	}
 
+	template<u2 n,typename Reciver_Addr> requires ((max_size==0||n<=max_size)&&(std::is_same_v<Reciver_Addr,Reciver>))
+	SIMD_OPT void eval(Addr_Pack_Ref<Reciver_Addr,n> pack_r) const
+	{
+		eval_helper(pack_r,std::make_index_sequence<n>());
+	}
+
 	template<Scale_T Scale>
 	SIMD_OPT operator Scale() const
 	{
@@ -58,6 +64,13 @@ private:
 	ALWAYS_INLINE auto extract(const T&arg,const auto&pack_ref) const
 	{
 		if constexpr(Scale_Pack_T<T>)return arg[idx];
+		else return arg;
+	}
+
+	template<u2 idx,Addr_Like_T T>
+	ALWAYS_INLINE auto extract(const T&arg,const auto&pack_ref) const
+	{
+		if constexpr(Addr_Pack_T<T>)return arg[idx];
 		else return arg;
 	}
 
@@ -133,6 +146,24 @@ struct FMT_Scale
 
 };
 
+template<Addr_T Addr>
+struct FMT_Addr
+{
+	template<typename Arg>
+	static constexpr bool check_type()
+	{
+		if constexpr(Addr_Pack_T<Arg>||Addr_Pack_Ref_T<Arg>)return std::is_same_v<typename Arg::Addr_Type,Addr>;
+		else return std::is_same_v<Arg,Addr>;
+	}
+
+	template<typename Arg> requires(check_type<Arg>())
+	static constexpr u2 get_size()
+	{
+		if constexpr(Addr_Pack_T<Arg>||Addr_Pack_Ref_T<Arg>)return Arg::size;
+		else return 0;
+	}
+};
+
 template<Instruction_FMT_Indicator... Formats>
 struct Instruction_FMT
 {
@@ -175,6 +206,9 @@ struct Make_Fmt_Helper<T>{using type=FMT_Reg<T>;};
 
 template<Scale_T T>
 struct Make_Fmt_Helper<T>{using type=FMT_Scale<T>;};
+
+template<Addr_T T>
+struct Make_Fmt_Helper<T>{using type=FMT_Addr<T>;};
 
 // 因为conditional_t不能惰性实例化FMT_Reg<T>，导致传入非寄存器类型时出错，改用上面的类+特化实现
 // template<typename T>
