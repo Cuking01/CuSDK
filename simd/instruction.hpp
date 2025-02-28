@@ -1,6 +1,6 @@
 #pragma once
 
-template<auto opt,Reciver_T Reciver,Lazy_Eval_Arg_T... Args>
+template<auto opt,Reciver_T Reciver,Instruction_Arg_T... Args>
 struct Lazy_Eval_Record
 {
 	template<typename Arg>
@@ -90,6 +90,14 @@ private:
 
 };
 
+template<auto opt,Instruction_Arg_T... Args>
+void Command_Instruction_Executor
+{
+	Command_Instruction_Executor(const Args&... args){}
+	
+};
+
+
 template<typename Reg> requires (Reg_T<Reg>||Vec_Reg_Format_T<Reg>)
 struct FMT_Reg
 {
@@ -169,19 +177,19 @@ struct Instruction_FMT
 {
 	static constexpr u2 arg_n=sizeof...(Formats);
 
-	template<Lazy_Eval_Arg_T...Args> requires (sizeof...(Args)==arg_n)
+	template<Instruction_Arg_T...Args> requires (sizeof...(Args)==arg_n)
 	static constexpr bool check_type()
 	{
 		return ((Formats::template check_type<Args>())&&...);
 	}
 
-	template<Lazy_Eval_Arg_T...Args> requires (sizeof...(Args)==arg_n)
+	template<Instruction_Arg_T...Args> requires (sizeof...(Args)==arg_n)
 	static constexpr u2 get_size()
 	{
 		return std::max({Formats::template get_size<Args>()...});
 	}
 
-	template<Lazy_Eval_Arg_T... Args> requires (sizeof...(Args)==arg_n)
+	template<Instruction_Arg_T... Args> requires (sizeof...(Args)==arg_n)
 	static constexpr bool check()
 	{
 		if constexpr(check_type<Args...>())

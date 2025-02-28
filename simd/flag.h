@@ -1,5 +1,41 @@
 #pragma once
 
+#ifdef __SSE__
+static constexpr bool sse=true;
+#else
+static constexpr bool sse=false;
+#endif
+
+#ifdef __SSE2__
+static constexpr bool sse2=true;
+#else
+static constexpr bool sse2=false;
+#endif
+
+#ifdef __SSE3__
+static constexpr bool sse3=true;
+#else
+static constexpr bool sse3=false;
+#endif
+
+#ifdef __SSSE3__
+static constexpr bool ssse3=true;
+#else
+static constexpr bool ssse3=false;
+#endif
+
+#ifdef __SSE4_1__
+static constexpr bool sse4_1=true;
+#else
+static constexpr bool sse4_1=false;
+#endif
+
+#ifdef __SSE4_2__
+static constexpr bool sse4_2=true;
+#else
+static constexpr bool sse4_2=false;
+#endif
+
 #ifdef __AVX__
 static constexpr bool avx=true;
 #else
