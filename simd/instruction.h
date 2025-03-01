@@ -22,7 +22,7 @@ template<typename T>
 concept Instruction_Arg_T=Reg_Like_T<T>||Imm_T<T>||Scale_Like_T<T>||Addr_Like_T<T>;
 
 template<typename T>
-concept Reciver_T=Reg_T<T>||Scale_T<T>;
+concept Reciver_T=Reg_T<T>||Scale_T<T>||std::is_same_v<T,void>;
 
 // template<Reciver_T T>
 // struct Reciver_Pack_Helper;

@@ -195,6 +195,7 @@ private:
 	}
 };
 
+
 template<Reg_T Reg,u2 n> requires (n>0)
 struct Pack_CRef
 {

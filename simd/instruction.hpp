@@ -1,12 +1,19 @@
 #pragma once
 
+template<u2 n>
+struct Pack_Void
+{
+	int x;
+	ALWAYS_INLINE int& operator[](u2 idx){return x;}
+};
+
 template<auto opt,Reciver_T Reciver,Instruction_Arg_T... Args>
 struct Lazy_Eval_Record
 {
 	template<typename Arg>
 	static constexpr u2 arg_size()
 	{
-		if constexpr(Reg_T<Arg>||CInt_T<Arg>||Scale_T<Arg>)return 0;
+		if constexpr(Reg_T<Arg>||CInt_T<Arg>||Scale_T<Arg>||Addr_T<Arg>)return 0;
 		else if constexpr(Lazy_Eval_Record_T<Arg>)return Arg::max_size;
 		else return Arg::size;
 	}
@@ -17,7 +24,14 @@ struct Lazy_Eval_Record
 
 	std::tuple<Lazy_Eval_Arg_Convert<Args>...> args;
 
-	ALWAYS_INLINE Lazy_Eval_Record(const Args&... args):args{args...} {}
+	ALWAYS_INLINE Lazy_Eval_Record(const Args&... args):args{args...}
+	{
+		if constexpr(std::is_same_v<Reciver_Type,void>)
+		{
+			Pack_Void<max_size==0?1:max_size> pack_void;
+			this->eval(pack_void);
+		}
+	}
 
 	template<u2 n,typename Reciver_Derived> requires ((max_size==0||n<=max_size)&&(std::derived_from<Reciver_Derived,Reciver>))
 	SIMD_OPT void eval(Pack_Ref<Reciver_Derived,n> pack_r) const
@@ -33,6 +47,12 @@ struct Lazy_Eval_Record
 
 	template<u2 n,typename Reciver_Addr> requires ((max_size==0||n<=max_size)&&(std::is_same_v<Reciver_Addr,Reciver>))
 	SIMD_OPT void eval(Addr_Pack_Ref<Reciver_Addr,n> pack_r) const
+	{
+		eval_helper(pack_r,std::make_index_sequence<n>());
+	}
+
+	template<u2 n> requires (max_size==0||n<=max_size)
+	SIMD_OPT void eval(Pack_Void<n> pack_r) const
 	{
 		eval_helper(pack_r,std::make_index_sequence<n>());
 	}
@@ -77,7 +97,10 @@ private:
 	template<std::size_t extract_id,std::size_t...ids>
 	SIMD_OPT void eval_one(auto&reciver,auto&pack_r,std::index_sequence<ids...>) const
 	{
-		reciver=opt(extract<extract_id>(std::get<ids>(args),pack_r)...);
+		if constexpr(std::is_same_v<Reciver_Type,void>)
+			opt(extract<extract_id>(std::get<ids>(args),pack_r)...);
+		else
+			reciver=opt(extract<extract_id>(std::get<ids>(args),pack_r)...);
 	}
 
 
@@ -91,11 +114,11 @@ private:
 };
 
 template<auto opt,Instruction_Arg_T... Args>
-void Command_Instruction_Executor
+void Exec_Command_Instruction(const Args&... args)
 {
-	Command_Instruction_Executor(const Args&... args){}
-	
-};
+	using LER=Lazy_Eval_Record<opt,void,Args...>;
+
+}
 
 
 template<typename Reg> requires (Reg_T<Reg>||Vec_Reg_Format_T<Reg>)
