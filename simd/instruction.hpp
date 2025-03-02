@@ -113,14 +113,6 @@ private:
 
 };
 
-template<auto opt,Instruction_Arg_T... Args>
-void Exec_Command_Instruction(const Args&... args)
-{
-	using LER=Lazy_Eval_Record<opt,void,Args...>;
-
-}
-
-
 template<typename Reg> requires (Reg_T<Reg>||Vec_Reg_Format_T<Reg>)
 struct FMT_Reg
 {
@@ -183,8 +175,8 @@ struct FMT_Addr
 	template<typename Arg>
 	static constexpr bool check_type()
 	{
-		if constexpr(Addr_Pack_T<Arg>||Addr_Pack_Ref_T<Arg>)return std::is_same_v<typename Arg::Addr_Type,Addr>;
-		else return std::is_same_v<Arg,Addr>;
+		if constexpr(Addr_Pack_T<Arg>||Addr_Pack_Ref_T<Arg>)return std::is_convertible_v<typename Arg::Addr_Type,Addr>;
+		else return std::is_convertible_v<Arg,Addr>;
 	}
 
 	template<typename Arg> requires(check_type<Arg>())
