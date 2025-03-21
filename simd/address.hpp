@@ -1,16 +1,29 @@
 #pragma once
 
+template<Addr_T T>
+struct Addr_Pack_Size_Ele_Helper
+{
+	static constexpr u2 size_ele=sizeof(std::remove_pointer_t<T>);
+};
+
+template<Addr_T T> requires (std::is_convertible_v<void*,T>)
+struct Addr_Pack_Size_Ele_Helper<T>
+{
+	static constexpr u2 size_ele=1;
+};
+
 template<Addr_T T,u2 n>
 struct Addr_Pack
 {
 	T ele[n];
 	using Addr_Type=T;
 	static constexpr u2 size=n;
+	static constexpr u2 size_ele=Addr_Pack_Size_Ele_Helper<T>::size_ele;
 	template<std::same_as<T>...Args> requires (sizeof...(Args)==n)
 	ALWAYS_INLINE Addr_Pack(Args... args):ele{args...} {}
 
 	template<std::size_t... ids>
-	ALWAYS_INLINE Addr_Pack(T arg,u3 step,std::index_sequence<ids...>):Addr_Pack((T)((u0*)arg+ids*step)...) {}
+	ALWAYS_INLINE Addr_Pack(T arg,u3 step,std::index_sequence<ids...>):Addr_Pack((T)((u0*)arg+ids*step*size_ele)...) {}
 
 	//等步长构造
 	ALWAYS_INLINE Addr_Pack(T arg,u3 step):Addr_Pack(arg,step,std::make_index_sequence<n>()){}
