@@ -23,7 +23,7 @@ struct ZMM:Vec_Reg_Base
 	SIMD_OPT void store (void*p) const{_mm512_store_si512((__m512i*)p,i);}
 	SIMD_OPT void storeu(void*p) const{_mm512_storeu_si512((__m512i*)p,i);}
 	SIMD_OPT void stream(void*p) const{_mm512_stream_si512((__m512i*)p,i);}
-	SIMD_OPT setzero(){i=_mm512_setzero_si512();}
+	SIMD_OPT void setzero(){i=_mm512_setzero_si512();}
 #endif
 };
 

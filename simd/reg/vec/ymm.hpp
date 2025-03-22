@@ -25,7 +25,7 @@ struct YMM:Vec_Reg_Base
 	SIMD_OPT void store (void*p) const{_mm256_store_si256((__m256i*)p,i);}
 	SIMD_OPT void storeu(void*p) const{_mm256_storeu_si256((__m256i*)p,i);}
 	SIMD_OPT void stream(void*p) const{_mm256_stream_si256((__m256i*)p,i);}
-	SIMD_OPT setzero(){i=_mm256_setzero_si256();}
+	SIMD_OPT void setzero(){i=_mm256_setzero_si256();}
 #endif
 
 };

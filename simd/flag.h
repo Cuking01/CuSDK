@@ -101,13 +101,9 @@ static constexpr bool avx512dq=false;
 // Check for AVX-512 Integer Fused Multiply-Add Instructions support
 #ifdef __AVX512IFMA__
 static constexpr bool avx512ifma=true;
-#else
-static constexpr bool avx512ifma=false;
-#endif
-
-#ifdef __AVX512IFMA52__
 static constexpr bool avx512ifma52=true;
 #else
+static constexpr bool avx512ifma=false;
 static constexpr bool avx512ifma52=false;
 #endif
 
