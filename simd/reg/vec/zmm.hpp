@@ -19,7 +19,7 @@ struct ZMM:Vec_Reg_Base
 #ifdef __AVX512F__
 	SIMD_OPT void load  (const void*p){i=_mm512_load_si512((const __m512i*)p);}
 	SIMD_OPT void loadu (const void*p){i=_mm512_loadu_si512((const __m512i*)p);}
-	SIMD_OPT void stream_load(const void*p){i=_mm512_stream_load_si512((const __m512i*)p);}
+	SIMD_OPT void stream_load(const void*p){i=_mm512_stream_load_si512((void*)p);}
 	SIMD_OPT void store (void*p) const{_mm512_store_si512((__m512i*)p,i);}
 	SIMD_OPT void storeu(void*p) const{_mm512_storeu_si512((__m512i*)p,i);}
 	SIMD_OPT void stream(void*p) const{_mm512_stream_si512((__m512i*)p,i);}
