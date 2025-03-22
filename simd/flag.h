@@ -105,6 +105,12 @@ static constexpr bool avx512ifma=true;
 static constexpr bool avx512ifma=false;
 #endif
 
+#ifdef __AVX512IFMA52__
+static constexpr bool avx512ifma52=true;
+#else
+static constexpr bool avx512ifma52=false;
+#endif
+
 // Check for AVX-512 Vector Byte Manipulation Instructions support
 #ifdef __AVX512VBMI__
 static constexpr bool avx512vbmi=true;

@@ -16,12 +16,18 @@ struct YMM:Vec_Reg_Base
 		return (const_with_t<T,B>&)(const_with_t<YMM,B>&)self;
 	}
 
-	SIMD_OPT void load  (const void*p){i=_mm256_load_si256((__m256i*)p);}
-	SIMD_OPT void loadu (const void*p){i=_mm256_loadu_si256((__m256i*)p);}
-	SIMD_OPT void stream_load(const void*p){i=_mm256_stream_load_si256((__m256i*)p);}
+#ifdef __AVX__
+	SIMD_OPT void load  (const void*p){i=_mm256_load_si256((const __m256i*)p);}
+	SIMD_OPT void loadu (const void*p){i=_mm256_loadu_si256((const __m256i*)p);}
+#if __AVX2__
+	SIMD_OPT void stream_load(const void*p){i=_mm256_stream_load_si256((const __m256i*)p);}
+#endif
 	SIMD_OPT void store (void*p) const{_mm256_store_si256((__m256i*)p,i);}
 	SIMD_OPT void storeu(void*p) const{_mm256_storeu_si256((__m256i*)p,i);}
 	SIMD_OPT void stream(void*p) const{_mm256_stream_si256((__m256i*)p,i);}
+	SIMD_OPT setzero(){i=_mm256_setzero_si256();}
+#endif
+
 };
 
 struct YMM_I:YMM
