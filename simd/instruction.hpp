@@ -247,7 +247,7 @@ struct Reg_Trait
 	static constexpr u2 size=1;
 };
 
-template<typename T> requires (Reg_Pack_T<T>||Pack_Ref_T<T>)
+template<typename T> requires (Reg_Pack_T<T>||Pack_CRef_T<T>)
 struct Reg_Trait<T>
 {
 	using type=typename T::Reg_Type;

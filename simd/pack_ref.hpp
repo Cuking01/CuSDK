@@ -215,7 +215,8 @@ struct Pack_CRef
 
 	//合并构造的接口 
 	template<Reg_CLvalue_Like_T... Reg_Likes> 
-		requires (std::is_same_v<Reg,get_reg<std::remove_cvref_t<Reg_Likes>>>&&...) //所有参数对应的寄存器相同，且等于本类的存储类型
+		requires ((std::is_same_v<Reg,get_reg<std::remove_cvref_t<Reg_Likes>>>&&...) //所有参数对应的寄存器相同，且等于本类的存储类型
+				 &&!(sizeof...(Reg_Likes)==1&&(std::is_same_v<Reg,std::remove_cvref_t<Reg_Likes>>&&...))) //并且不能和下面那个构造冲突！SB C++
 	ALWAYS_INLINE Pack_CRef(Reg_Likes&&...reg_likes):
 		Pack_CRef(Pack_Ref_Detail::merge_flag,
 			[&reg_likes...]<u2 idx>()->decltype(auto)
