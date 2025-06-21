@@ -16,6 +16,7 @@ struct Vec_Reg:MM_Base,FMT_Base
 
 	SIMD_OPT Vec_Reg(){}
 	SIMD_OPT Vec_Reg(const ele_type*p){loadu(p);}
+
 	template<Lazy_Eval_Record_T LER>
 	SIMD_OPT Vec_Reg(LER ler){ler.eval(Pack_Ref<Vec_Reg,1>(*this));}
 

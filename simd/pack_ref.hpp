@@ -143,22 +143,22 @@ struct Pack_Ref
 		mov_impl(std::forward<RHS>(rhs),std::make_index_sequence<n>());
 	}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void load(const Args*...p) const {ls_opt<&Reg_Type::load>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void loadu(const Args*...p) const {ls_opt<&Reg_Type::loadu>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void stream_load(const Args*...p) const {ls_opt<&Reg_Type::stream_load>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
 	template<std::integral...Args> requires (sizeof...(Args)>=2)
@@ -249,13 +249,13 @@ struct Pack_CRef
 		return as_impl<T>(std::make_index_sequence<n>());
 	}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
 	template<std::integral...Args> requires (sizeof...(Args)>=2)

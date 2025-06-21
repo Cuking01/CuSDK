@@ -310,8 +310,39 @@ void test_mul_mod_speed2()
 
 }
 
+void test_k_reg_1()
+{
+	VU64x8 a=set(1ull,4ull,5ull,8ull,9ull,12ull,13ull,16ull);
+	VU64x8 b=set(2ull,3ull,6ull,7ull,10ull,11ull,14ull,15ull);
+	VU64x8 c=set(101ull,102ull,103ull,104ull,105ull,106ull,107ull,108ull);
+
+	K8 k=a<=b;
+
+	c=add(c,k,a,b);
+
+	puts("test_k_reg_1");
+	c.print();
+}
+
+void test_k_reg_2()
+{
+	Pack<VU64x8,4> a=set(1ull,4ull,5ull,8ull,9ull,12ull,13ull,16ull);
+	Pack<VU64x8,4> b=set(2ull,3ull,6ull,7ull,10ull,11ull,14ull,15ull);
+	Pack<VU64x8,4> c=set(101ull,102ull,103ull,104ull,105ull,106ull,107ull,108ull);
+
+	Pack<K8,4> k=a<=b;
+
+	c=add(c,k,a,b);
+
+	puts("test_k_reg_2");
+	for(int i=0;i<4;i++)
+		c[i].print();
+}
+
 int main() try
 {
+	test_k_reg_1();
+	test_k_reg_2();
 	// Pack<VU32x8,4> a;
 	// const Pack_Ref<VU32x8,2> pr1=a[0,1];
 	// VU32x8 b,c;

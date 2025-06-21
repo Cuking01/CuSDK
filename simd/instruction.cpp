@@ -22,6 +22,12 @@ SIMD_OPT auto name(const A&a,const B&b,const C&c) \
 	return Lazy_Eval_Record<instrction,ret,A,B,C>(a,b,c); \
 }
 
+#define make_i_4(name,instrction,ret,iflag,other_req,FMT1,FMT2,FMT3,FMT4) \
+template<typename A,typename B,typename C,typename D> requires(IFMT<FMT1,FMT2,FMT3,FMT4>::check<A,B,C,D>()&&(iflag)&&(bool)(other_req)) \
+SIMD_OPT auto name(const A&a,const B&b,const C&c,const D&d) \
+{ \
+	return Lazy_Eval_Record<instrction,ret,A,B,C,D>(a,b,c,d); \
+}
 
 #include "instruction/application-targeted.cpp"
 #include "instruction/arithmetic.cpp"

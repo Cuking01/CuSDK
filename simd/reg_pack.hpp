@@ -14,29 +14,27 @@ struct Pack
 	ALWAYS_INLINE Reg& operator[](u2 idx){return reg[idx];}
 	ALWAYS_INLINE const Reg& operator[](u2 idx) const {return reg[idx];}
 
-
-
 	ALWAYS_INLINE Pack(){}
 
 	template<std::same_as<ele_type>... Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT Pack(const Args*...p) {loadu(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void load(const Args*...p) {ls_opt<&Reg_Type::load>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void loadu(const Args*...p) {ls_opt<&Reg_Type::loadu>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void stream_load(const Args*...p) {ls_opt<&Reg_Type::stream_load>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (sizeof...(Args)==n||sizeof...(Args)==1)
 	SIMD_OPT void store(Args*...p) const {ls_opt<&Reg_Type::store>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void storeu(Args*...p) const {ls_opt<&Reg_Type::storeu>(p...);}
 
-	template<std::same_as<ele_type>...Args> requires(sizeof...(Args)==n||sizeof...(Args)==1)
+	template<std::same_as<ele_type>...Args> requires (Vec_Reg_T<Reg>&&(sizeof...(Args)==n||sizeof...(Args)==1))
 	SIMD_OPT void stream(Args*...p) const {ls_opt<&Reg_Type::stream>(p...);}
 
 	template<Lazy_Eval_Record_T LER>
