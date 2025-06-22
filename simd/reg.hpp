@@ -8,10 +8,6 @@ struct Reg_Base
 		ler.eval(Pack_Ref<Self,1>(self));
 	}
 
-	SIMD_OPT decltype(auto) operator[](this auto&self,u2 idx)
-	{
-		return (self);
-	}
 };
 
 #ifdef __AVX512F__

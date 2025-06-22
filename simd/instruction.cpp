@@ -59,3 +59,5 @@ SIMD_OPT auto name(const A&a,const B&b,const C&c,const D&d) \
 #undef make_i_1
 #undef make_i_2
 #undef make_i_3
+#undef make_i_4
+

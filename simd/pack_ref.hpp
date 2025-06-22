@@ -47,10 +47,17 @@ namespace Pack_Ref_Detail
 	ALWAYS_INLINE decltype(auto) extract_ith_reg(Reg_Like0&&reg0,Reg_Likes&&...regs)
 	{
 		static constexpr u2 sz=get_reg_num<std::remove_cvref_t<Reg_Like0>>;
+
 		if constexpr(idx<sz)
-			return reg0[idx];
+		{
+			if constexpr(Reg_T<std::remove_cvref_t<Reg_Like0>>)
+				return reg0;
+			else return reg0[idx];
+		}
 		else
+		{
 			return extract_ith_reg<idx-sz,Reg_Likes...>(std::forward<Reg_Likes>(regs)...);
+		}
 	}
 
 	template<typename Reg_Like0,typename... Reg_Likes>
