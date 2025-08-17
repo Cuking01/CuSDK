@@ -31,4 +31,4 @@ struct Assert_Failed: std::runtime_error
 #define cu_assert_get_desc(...) PP_IF(PP_IS_EMPTY(__VA_ARGS__),"null",cu_assert_get_desc_help(__VA_ARGS__))
 #define cu_assert(cond,...) do{if(!(cond)){throw Assert_Failed(#cond,cu_assert_get_desc(__VA_ARGS__),__FILE__,__LINE__,__func__,__DATE__,__TIME__);}}while(0)
 
-#define cu_error(cond,...) cu_assert(false,__VA_ARGS__)
+#define cu_error(...) cu_assert(false,__VA_ARGS__)
