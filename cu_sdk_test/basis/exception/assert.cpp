@@ -1,4 +1,6 @@
-#include "../../basis.h"
+#include "../../../basis.h"
+
+using namespace cusdk;
 
 int main()
 {

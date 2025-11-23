@@ -4,8 +4,12 @@
 	#error "c++ standard must be C++20 or later"
 #endif
 
-#include "basis/macro.h"
 #include "basis/std_head.h"
+
+namespace cusdk
+{
+
+#include "basis/macro.h"
 #include "basis/type_traits.h"
 #include "basis/type.h"
 #include "basis/concepts.h"
@@ -15,3 +19,5 @@
 #include "basis/safe_int_calc.h"
 #include "basis/file.h"
 #include "basis/memory.h"
+
+};

@@ -7,6 +7,9 @@
 #define SIMD_OPT ALWAYS_INLINE
 #define IMPL_ALTERNATIVE(...) 
 
+namespace cusdk
+{
+
 #include "simd/flag.h"
 
 #include "simd/reg.h"
@@ -31,6 +34,8 @@
 #include "simd/instruction.hpp"
 
 #include "simd/instruction.cpp"
+
+};
 
 #undef IMPL_ALTERNATIVE
 #undef SIMD_OPT

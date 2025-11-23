@@ -1,5 +1,7 @@
 #include "../../basis.h"
 
+using namespace cusdk;
+
 int main()
 {
 	using T1=std::vector<int>;

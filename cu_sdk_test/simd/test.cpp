@@ -1,6 +1,8 @@
 #include "../../basis.h"
 #include "../../simd.h"
 
+using namespace cusdk;
+
 template<typename T>
 alignas(64) T a[1<<20];
 
