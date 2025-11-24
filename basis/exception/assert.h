@@ -18,10 +18,8 @@ struct Assert_Failed: std::runtime_error
 			"error desciption: {}.\n"
 			"in file: [{}] line: [{}]\n"
 			"in function: [{}]\n"
-			"app version: [{}]\n"
-			"cusdk version: [{}]\n"
 			"compile time: [{} {}]\n",
-			cond,desc,file_name,line,func_name,APP_VERSION_ID,CUSDK_VERSION_ID,compile_date,compile_time
+			cond,desc,file_name,line,func_name,compile_date,compile_time
 		))
 	{}
 
