@@ -1,36 +1,36 @@
 
-if(TARGET CuSDK::Basis)
+if(TARGET CuSDK_Basis)
   return()
 endif()
 
 #Basis
-add_library(CuSDK::Basis INTERFACE)
-target_compile_features(CuSDK::Basis INTERFACE cxx_std_23)
-target_include_directories(CuSDK::Basis INTERFACE 
+add_library(CuSDK_Basis INTERFACE)
+target_compile_features(CuSDK_Basis INTERFACE cxx_std_23)
+target_include_directories(CuSDK_Basis INTERFACE 
   "${CMAKE_CURRENT_LIST_DIR}include/basis"
 )
 
 
-add_library(CuSDK::Audio INTERFACE)
-target_include_directories(CuSDK::Audio INTERFACE 
+add_library(CuSDK_Audio INTERFACE)
+target_include_directories(CuSDK_Audio INTERFACE 
   "${CMAKE_CURRENT_LIST_DIR}/include/audio"
 )
-target_link_libraries(CuSDK::Audio INTERFACE CuSDK::Basis)
+target_link_libraries(CuSDK_Audio INTERFACE CuSDK_Basis)
 
 
-add_library(CuSDK::Algorithm INTERFACE)
-target_include_directories(CuSDK::Algorithm INTERFACE 
+add_library(CuSDK_Algorithm INTERFACE)
+target_include_directories(CuSDK_Algorithm INTERFACE 
   "${CMAKE_CURRENT_LIST_DIR}/include/algorithm"
 )
-target_link_libraries(CuSDK::Algorithm INTERFACE CuSDK::Basis)
+target_link_libraries(CuSDK_Algorithm INTERFACE CuSDK_Basis)
 
 
-add_library(CuSDK::SIMD INTERFACE)
-target_include_directories(CuSDK::SIMD INTERFACE 
+add_library(CuSDK_SIMD INTERFACE)
+target_include_directories(CuSDK_SIMD INTERFACE 
   "${CMAKE_CURRENT_LIST_DIR}/include/simd"
 )
-target_link_libraries(CuSDK::Algorithm INTERFACE CuSDK::Basis)
-target_compile_options(CuSDK::SIMD INTERFACE
+target_link_libraries(CuSDK_Algorithm INTERFACE CuSDK_Basis)
+target_compile_options(CuSDK_SIMD INTERFACE
   -fno-strict-aliasing
 )
 
