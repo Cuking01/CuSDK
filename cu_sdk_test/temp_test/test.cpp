@@ -1,4 +1,4 @@
-#include "../../include/CuSDK/basis.h"
+#include "../../include/basis/CuSDK/basis.h"
 
 using namespace cusdk;
 

@@ -1,22 +1,40 @@
 
-if(TARGET CuSDK)
+if(TARGET CuSDK::Basis)
   return()
 endif()
 
-add_library(CuSDK INTERFACE)
-
-#设置 include 目录
-target_include_directories(CuSDK INTERFACE 
-  "${CMAKE_CURRENT_LIST_DIR}/include"
+#Basis
+add_library(CuSDK::Basis INTERFACE)
+target_compile_features(CuSDK::Basis INTERFACE cxx_std_23)
+target_include_directories(CuSDK::Basis INTERFACE 
+  "${CMAKE_CURRENT_LIST_DIR}include/basis"
 )
 
-#最低需要 C++23 标准
-target_compile_features(CuSDK INTERFACE
-  cxx_std_23
-)
 
-# -fno-strict-aliasing 会被添加到链接 target 的编译选项中
-target_compile_options(CuSDK INTERFACE
+add_library(CuSDK::Audio INTERFACE)
+target_include_directories(CuSDK::Audio INTERFACE 
+  "${CMAKE_CURRENT_LIST_DIR}/include/audio"
+)
+target_link_libraries(CuSDK::Audio INTERFACE CuSDK::Basis)
+
+
+add_library(CuSDK::Algorithm INTERFACE)
+target_include_directories(CuSDK::Algorithm INTERFACE 
+  "${CMAKE_CURRENT_LIST_DIR}/include/algorithm"
+)
+target_link_libraries(CuSDK::Algorithm INTERFACE CuSDK::Basis)
+
+
+add_library(CuSDK::SIMD INTERFACE)
+target_include_directories(CuSDK::SIMD INTERFACE 
+  "${CMAKE_CURRENT_LIST_DIR}/include/simd"
+)
+target_link_libraries(CuSDK::Algorithm INTERFACE CuSDK::Basis)
+target_compile_options(CuSDK::SIMD INTERFACE
   -fno-strict-aliasing
 )
+
+
+
+
 

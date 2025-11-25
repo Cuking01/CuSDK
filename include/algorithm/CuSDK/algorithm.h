@@ -1,6 +1,6 @@
 #pragma once
 
-#include "basis.h"
+#include "../../basis/CuSDK/basis.h"
 
 namespace cusdk
 {
