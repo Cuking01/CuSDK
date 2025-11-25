@@ -7,7 +7,7 @@ endif()
 add_library(CuSDK_Basis INTERFACE)
 target_compile_features(CuSDK_Basis INTERFACE cxx_std_23)
 target_include_directories(CuSDK_Basis INTERFACE 
-  "${CMAKE_CURRENT_LIST_DIR}include/basis"
+  "${CMAKE_CURRENT_LIST_DIR}/include/basis"
 )
 
 
