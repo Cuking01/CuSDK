@@ -23,9 +23,9 @@
 
 ### 引入
 
-引入此库非常简单，只需要 `#include` 一个文件 `simd.h`即可，此文件在`include/CuSDK`下，然后编译选项自行加上需要链接的指令集，以及`-fno-strict-aliasing` ，并开启至少 `C++23`。
+引入此库非常简单，只需要 `#include` 一个文件 `simd.h`即可，此文件在`include/simd/CuSDK`下，然后编译选项自行加上需要链接的指令集，以及`-fno-strict-aliasing` ，并开启至少 `C++23`。
 
-也可以用`cmake`配置，配置方法是`include(xxx/cusdk.cmake)`，然后给自己的目标使用`target_link_library` 链接到接口目标`CuSDK` ，此目标不会编译，仅仅自动配置搜索路径和C++标准，cpu标志则还需要自行单独配置。
+也可以用`cmake`配置，配置方法是`include(xxx/cusdk.cmake)`，然后给自己的目标使用`target_link_library` 链接到接口目标`CuSDK_SIMD` ，此目标不会编译，仅仅自动配置搜索路径和C++标准，cpu标志则还需要自行单独配置。
 
 ### 寄存器
 
