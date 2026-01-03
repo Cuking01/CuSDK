@@ -250,6 +250,8 @@ void test_mul_mod()
 	s3 ri,np;
 	s3 r=1ull<<32;
 	exgcd(r,mod,ri,np);
+
+	printf("ri=%lld\n",ri);
 	const u2 modp=(np%r+r)%r;
 
 	mul_mod_s(41,292,mod,modp);
@@ -360,9 +362,9 @@ int main() try
 
 	// for(int i=0;i<8;i++)
 	// 	pr3[i].print();
-	//test_mul_mod();
-	//test_mul_mod_speed1();
-	//test_mul_mod_speed2();
+	test_mul_mod();
+	// test_mul_mod_speed1();
+	// test_mul_mod_speed2();
 	//test_to_mogo();
 
 	VU64x8 x;

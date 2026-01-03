@@ -19,7 +19,7 @@ struct YMM:Vec_Reg_Base
 #ifdef __AVX__
 	SIMD_OPT void load  (const void*p){i=_mm256_load_si256((const __m256i*)p);}
 	SIMD_OPT void loadu (const void*p){i=_mm256_loadu_si256((const __m256i*)p);}
-#if __AVX2__
+#ifdef __AVX2__
 	SIMD_OPT void stream_load(const void*p){i=_mm256_stream_load_si256((const __m256i*)p);}
 #endif
 	SIMD_OPT void store (void*p) const{_mm256_store_si256((__m256i*)p,i);}

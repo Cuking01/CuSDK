@@ -6,6 +6,14 @@ SIMD_OPT auto set(const Args&... args)
 	return Lazy_Eval_Record<_mm256_setr_epi32,VI32x8,Args...>(args...);
 }
 
+template<typename... Args> requires (IFMT<u2,u2,u2,u2,u2,u2,u2,u2>::check<Args...>()&&avx)
+SIMD_OPT auto set(const Args&... args)
+{
+	return Lazy_Eval_Record<_mm256_setr_epi32,VU32x8,Args...>(args...);
+}
+
+#ifdef __AVX512F__
+
 //处理set是宏的问题
 SIMD_OPT __m512i mm512_setr_epi64_helper(s3 e0,s3 e1,s3 e2,s3 e3,s3 e4,s3 e5,s3 e6,s3 e7)
 {
@@ -18,3 +26,4 @@ SIMD_OPT auto set(const Args&... args)
 	return Lazy_Eval_Record<mm512_setr_epi64_helper,VU64x8,Args...>(args...);
 }
 
+#endif
