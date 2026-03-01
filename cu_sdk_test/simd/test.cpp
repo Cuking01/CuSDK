@@ -184,14 +184,14 @@ void test_to_mogo()
 		a<u2>[i]=i;
 
 	Pack<VU32x8,4> x(a<u2>),t0,t1;
-	VU32x8 vyi=set1(yi);
-	VU32x8 vmod=set1(mod);
+	VU32x8 vyi=set1_x8(yi);
+	VU32x8 vmod=set1_x8(mod);
 	to_mogo<4>(x,t0,t1,vyi,vmod);
 
 	for(int i=0;i<4;i++)
 		x[i].print(std::format("x[{}]",i));
 
-	VU32x8 vmodp=set1(pow(mod,(1u<<31)-1));
+	VU32x8 vmodp=set1_x8(pow(mod,(1u<<31)-1));
 	mogo_to<4>(x,t0,t1,vmod,vmodp);
 
 	for(int i=0;i<4;i++)
@@ -214,8 +214,8 @@ void test_transpose()
 void arr_mul_mod1(u2*a,u2*b,u2 size,u2 mod,u2 modp)
 {
 	Pack<VU32x8,3> pa,pb,t0,t1;
-	VU32x8 vmod=set1(mod);
-	VU32x8 vmodp=set1(modp);
+	VU32x8 vmod=set1_x8(mod);
+	VU32x8 vmodp=set1_x8(modp);
 	for(int i=0;i<size;i+=24)
 	{
 		pa.load(a+i);
@@ -228,8 +228,8 @@ void arr_mul_mod1(u2*a,u2*b,u2 size,u2 mod,u2 modp)
 void arr_mul_mod2(u2*a,u2*b,u2 size,u2 mod,u2 modp)
 {
 	Pack<VU32x8,4> pa,pb,t;
-	VU32x8 vmod=set1(mod);
-	VU32x8 vmodp=set1(modp);
+	VU32x8 vmod=set1_x8(mod);
+	VU32x8 vmodp=set1_x8(modp);
 	for(int i=0;i<size;i+=32)
 	{
 		pa.load(a+i);
@@ -256,8 +256,8 @@ void test_mul_mod()
 
 	mul_mod_s(41,292,mod,modp);
 
-	VU32x8 vmod=set1(mod);
-	VU32x8 vmodp=set1(modp);
+	VU32x8 vmod=set1_x8(mod);
+	VU32x8 vmodp=set1_x8(modp);
 	vmod.print("vmod");
 	vmodp.print("vmodp");
 
