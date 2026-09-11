@@ -150,14 +150,32 @@ struct FMT_Imm
 	}
 };
 
+namespace Scale_Cmp_Detail
+{
+	//标量格式的匹配：类型完全相同就放过；否则只放宽"同宽度同符号性的整型"，
+	//即字面量类型在不同平台上不同（如 1ull 与 uint64_t）时也能匹配。
+	//只用标准 trait：__int128 在 strict 模式下 is_integral 为 false，会落到严格判定；
+	//在 gnu 模式下为 true 且 is_signed 判定正确，两种模式行为一致。bool 排除在外。
+	template<typename A,typename B>
+	constexpr bool same_scalar()
+	{
+		if constexpr(!Scale_T<A>||!Scale_T<B>)return false;
+		else if constexpr(std::is_same_v<A,B>)return true;
+		else if constexpr(std::is_integral_v<A>&&std::is_integral_v<B>&&
+			!std::is_same_v<A,bool>&&!std::is_same_v<B,bool>)
+			return sizeof(A)==sizeof(B) && (std::is_signed_v<A> == std::is_signed_v<B>);
+		else return false;
+	}
+}
+
 template<Scale_T Scale>
 struct FMT_Scale
 {
 	template<typename Arg>
 	static constexpr bool check_type()
 	{
-		if constexpr(Scale_Pack_T<Arg>||Scale_Pack_Ref_T<Arg>)return std::is_same_v<typename Arg::Scale_Type,Scale>;
-		else return std::is_same_v<Arg,Scale>;
+		if constexpr(Scale_Pack_T<Arg>||Scale_Pack_Ref_T<Arg>)return Scale_Cmp_Detail::same_scalar<typename Arg::Scale_Type,Scale>();
+		else return Scale_Cmp_Detail::same_scalar<Arg,Scale>();
 	}
 
 	template<typename Arg> requires(check_type<Arg>())
@@ -253,4 +271,3 @@ struct Reg_Trait<T>
 	using type=typename T::Reg_Type;
 	static constexpr u2 size=T::size;
 };
-
