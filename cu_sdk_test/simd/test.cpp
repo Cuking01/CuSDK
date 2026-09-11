@@ -370,7 +370,7 @@ int main() try
 	VU64x8 x;
 	Pack_CRef<VU64x8,4> rx(x);
 	Pack_CRef<VU64x8,4> rx2(x,x,x,x);
-	Pack_CRef<VU64x8,4> rx3(rx,rx2,x,x);
+	Pack_CRef<VU64x8,10> rx3(rx,rx2,x,x);
 }
 catch(std::exception&e)
 {
